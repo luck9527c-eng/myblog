@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Check,
   Clock,
@@ -38,6 +38,8 @@ import {
   isFutureDateTime,
 } from '../utils/date';
 import { DAILY_REPORT_TEMPLATE, renderMarkdown } from '../utils/markdown';
+import { ConfirmModal } from './ConfirmModal';
+import { MarkdownBody } from './MarkdownBody';
 
 /** 后台日记编辑器在本地维护的完整表单（提交时按 id 决定 POST / PUT） */
 interface DiaryFormState {
@@ -69,6 +71,7 @@ interface AdminDashboardProps {
   onSaveSettings: (settings: SiteSettingsInput) => Promise<void>;
   onChangePassword: (oldPassword: string, newPassword: string) => Promise<void>;
   onPreviewArticle: (id: string) => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 const DOT_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#64748b'];
@@ -91,6 +94,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onSaveSettings,
   onChangePassword,
   onPreviewArticle,
+  onDirtyChange,
 }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('articles');
   const [toast, setToast] = useState<string | null>(null);
@@ -135,6 +139,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // Settings Form State
   const [settingsForm, setSettingsForm] = useState<Omit<SiteSettings, 'updatedAt'>>(data.settings);
 
+  // Unsaved-changes tracking & discard modal
+  const articleSnapshotRef = useRef<string>('');
+  const diarySnapshotRef = useRef<string>('');
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
+  const [confirmMessage, setConfirmMessage] = useState('');
+
   // Change Password Form State
   const [pwdOld, setPwdOld] = useState('');
   const [pwdNew, setPwdNew] = useState('');
@@ -167,29 +177,142 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     [],
   );
 
+  const buildArticleSnapshot = useCallback(
+    (
+      title: string,
+      excerpt: string,
+      categoryId: string,
+      tagsText: string,
+      publishedAt: string,
+      status: ArticleStatus,
+      pinned: boolean,
+      content: string,
+    ) =>
+      JSON.stringify({
+        title,
+        excerpt,
+        categoryId,
+        tagsText,
+        publishedAt,
+        status,
+        pinned,
+        content,
+      }),
+    [],
+  );
+
+  const isArticleDirty = useMemo(() => {
+    if (!isEditingArticle) return false;
+    return (
+      buildArticleSnapshot(
+        artTitle,
+        artExcerpt,
+        artCategoryId,
+        artTagsText,
+        artPublishedAt,
+        artStatus,
+        artPinned,
+        artContent,
+      ) !== articleSnapshotRef.current
+    );
+  }, [
+    isEditingArticle,
+    artTitle,
+    artExcerpt,
+    artCategoryId,
+    artTagsText,
+    artPublishedAt,
+    artStatus,
+    artPinned,
+    artContent,
+    buildArticleSnapshot,
+  ]);
+
+  const isDiaryDirty = useMemo(() => {
+    if (!editingDiary) return false;
+    return JSON.stringify(editingDiary) !== diarySnapshotRef.current;
+  }, [editingDiary]);
+
+  const isSettingsDirty = useMemo(() => {
+    if (activeTab !== 'settings') return false;
+    const s = data.settings;
+    return (
+      settingsForm.blogTitle !== s.blogTitle ||
+      settingsForm.blogSubtitle !== s.blogSubtitle ||
+      settingsForm.authorName !== s.authorName ||
+      settingsForm.authorHandle !== s.authorHandle ||
+      settingsForm.authorBio !== s.authorBio ||
+      settingsForm.authorLocation !== s.authorLocation ||
+      settingsForm.authorEmail !== s.authorEmail ||
+      settingsForm.aboutContent !== s.aboutContent
+    );
+  }, [activeTab, settingsForm, data.settings]);
+
+  const hasAnyUnsavedChanges = isArticleDirty || isDiaryDirty || isSettingsDirty;
+
+  useEffect(() => {
+    onDirtyChange?.(hasAnyUnsavedChanges);
+    return () => onDirtyChange?.(false);
+  }, [hasAnyUnsavedChanges, onDirtyChange]);
+
+  useEffect(() => {
+    if (!hasAnyUnsavedChanges) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasAnyUnsavedChanges]);
+
   const openArticleEditor = (article?: Article) => {
     if (article) {
+      const catId = article.categoryId || data.categories[0]?.id || '';
+      const tagsJoined = article.tags.join(', ');
+      const pubSlice = article.publishedAt.slice(0, 16);
       setArtId(article.id);
       setArtTitle(article.title);
       setArtExcerpt(article.excerpt);
-      setArtCategoryId(article.categoryId || data.categories[0]?.id || '');
-      setArtTagsText(article.tags.join(', '));
+      setArtCategoryId(catId);
+      setArtTagsText(tagsJoined);
       // 后端返回 YYYY-MM-DDTHH:mm:ss，<input type="datetime-local"> 只吃前 16 位
-      setArtPublishedAt(article.publishedAt.slice(0, 16));
+      setArtPublishedAt(pubSlice);
       setArtStatus(article.status);
       setArtPinned(article.pinned);
       setArtContent(article.content);
+      articleSnapshotRef.current = buildArticleSnapshot(
+        article.title,
+        article.excerpt,
+        catId,
+        tagsJoined,
+        pubSlice,
+        article.status,
+        article.pinned,
+        article.content,
+      );
     } else {
+      const catId = data.categories[0]?.id || '';
+      const nowLocal = getNowDateTimeLocal();
       setArtId(null);
       setArtTitle('');
       setArtExcerpt('');
-      setArtCategoryId(data.categories[0]?.id || '');
+      setArtCategoryId(catId);
       setArtTagsText('');
       // Default publish time is current local time
-      setArtPublishedAt(getNowDateTimeLocal());
+      setArtPublishedAt(nowLocal);
       setArtStatus('published');
       setArtPinned(false);
       setArtContent('');
+      articleSnapshotRef.current = buildArticleSnapshot(
+        '',
+        '',
+        catId,
+        '',
+        nowLocal,
+        'published',
+        false,
+        '',
+      );
     }
     setEditorMobileTab('write');
     setIsEditingArticle(true);
@@ -213,8 +336,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     onClearInitialEditArticle();
   }, [initialEditArticleId, data.articles]);
 
-  const handleSaveArticleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const saveArticleAction = useCallback(async () => {
     if (savingArticle) return;
     if (!artTitle.trim()) {
       showToast('请输入文章标题');
@@ -254,6 +376,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     } finally {
       setSavingArticle(false);
     }
+  }, [
+    savingArticle,
+    artTitle,
+    artTagsText,
+    artPublishedAt,
+    artId,
+    artExcerpt,
+    artContent,
+    artCategoryId,
+    artStatus,
+    artPinned,
+    onSaveArticle,
+  ]);
+
+  const handleSaveArticleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await saveArticleAction();
   };
 
   const handleTogglePinClick = async (art: Article) => {
@@ -365,7 +504,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  const handleSaveDiarySubmit = async () => {
+  const handleSaveDiarySubmit = useCallback(async () => {
     if (!editingDiary || savingDiary) return;
     const title = editingDiary.title.trim() || `${editingDiary.date} 每日日报`;
     const draft: DiaryDraft = {
@@ -387,7 +526,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     } finally {
       setSavingDiary(false);
     }
-  };
+  }, [editingDiary, savingDiary, onSaveDiary]);
 
   const handleDeleteDiaryClick = async (id: string) => {
     setBusyDiaryId(id);
@@ -402,8 +541,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  const handleSettingsSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const saveSettingsAction = useCallback(async () => {
     if (savingSettings) return;
     const payload: SiteSettingsInput = {
       blogTitle: settingsForm.blogTitle,
@@ -424,6 +562,60 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     } finally {
       setSavingSettings(false);
     }
+  }, [savingSettings, settingsForm, onSaveSettings]);
+
+  const handleSettingsSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await saveSettingsAction();
+  };
+
+  // Ctrl+S / Cmd+S shortcut in Admin editors
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        if (activeTab === 'articles' && isEditingArticle) {
+          e.preventDefault();
+          void saveArticleAction();
+        } else if (activeTab === 'diaries' && editingDiary) {
+          e.preventDefault();
+          void handleSaveDiarySubmit();
+        } else if (activeTab === 'settings' && isSettingsDirty) {
+          e.preventDefault();
+          void saveSettingsAction();
+        }
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [
+    activeTab,
+    isEditingArticle,
+    editingDiary,
+    isSettingsDirty,
+    saveArticleAction,
+    handleSaveDiarySubmit,
+    saveSettingsAction,
+  ]);
+
+  const requestGuardedAction = (dirty: boolean, message: string, action: () => void) => {
+    if (!dirty) {
+      action();
+      return;
+    }
+    setConfirmMessage(message);
+    setConfirmAction(() => action);
+  };
+
+  const handleTabSwitch = (nextTab: AdminTab) => {
+    if (nextTab === activeTab) return;
+    requestGuardedAction(
+      hasAnyUnsavedChanges,
+      '当前页面有未保存的编辑内容，切换标签页将放弃未保存的改动。',
+      () => {
+        setEditingDiary(null);
+        setActiveTab(nextTab);
+      },
+    );
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -457,7 +649,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   const tabButtonClass = (tab: AdminTab) =>
-    `px-3.5 py-2 rounded-xl text-xs font-medium transition-colors whitespace-nowrap ${
+    `px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap ${
       activeTab === tab
         ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-2xs'
         : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
@@ -467,12 +659,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   if (activeTab === 'articles' && isEditingArticle) {
     return (
       <form onSubmit={handleSaveArticleSubmit} className="space-y-4">
+        <ConfirmModal
+          isOpen={confirmAction !== null}
+          title="放弃未保存的文章？"
+          message={confirmMessage}
+          confirmLabel="放弃并离开"
+          cancelLabel="继续编辑"
+          onConfirm={() => {
+            const fn = confirmAction;
+            setConfirmAction(null);
+            fn?.();
+          }}
+          onCancel={() => setConfirmAction(null)}
+        />
+
         {/* Top Editor Bar */}
-        <div className="glass-card rounded-2xl p-4 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+        <div className="glass-card rounded-2xl p-4 shadow-2xs flex flex-wrap items-center justify-between gap-3" data-rain-ledge>
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setIsEditingArticle(false)}
+              onClick={() =>
+                requestGuardedAction(
+                  isArticleDirty,
+                  '当前文章有未保存的修改，返回列表将丢失这些改动。',
+                  () => setIsEditingArticle(false),
+                )
+              }
               className="px-3 py-1.5 rounded-lg text-xs text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
             >
               返回列表
@@ -480,6 +692,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
               {artId ? '编辑文章' : '撰写新文章'}
             </span>
+            {isArticleDirty && (
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                未保存 · Ctrl+S
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -534,9 +751,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[11px] font-medium text-zinc-500 mb-1">
+              <label className="block text-xs font-medium text-zinc-500 mb-1">
                 发布时间（默认当前时间，支持自由设为过去或未来）
               </label>
               <div className="flex items-center gap-2">
@@ -544,20 +761,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   type="datetime-local"
                   value={artPublishedAt}
                   onChange={(e) => setArtPublishedAt(e.target.value)}
-                  className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 tabular-nums"
+                  className="flex-1 px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 tabular-nums"
                 />
                 <button
                   type="button"
                   onClick={() => setArtPublishedAt(getNowDateTimeLocal())}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 shrink-0"
+                  className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 shrink-0"
                   title="重置为当前本地时间"
                 >
-                  <Clock className="w-3 h-3" />
+                  <Clock className="w-3.5 h-3.5" />
                   <span>设为当前时间</span>
                 </button>
               </div>
               {isFutureDateTime(artPublishedAt) && (
-                <p className="mt-1 text-[11px] text-blue-600 dark:text-blue-400">
+                <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
                   提示：当前设为未来日期，发布后将立即公开并按此日期排序展示。
                 </p>
               )}
@@ -565,11 +782,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-medium text-zinc-500 mb-1">文章分类</label>
+                <label className="block text-xs font-medium text-zinc-500 mb-1">文章分类</label>
                 <select
                   value={artCategoryId}
                   onChange={(e) => setArtCategoryId(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
                 >
                   {data.categories.map((cat) => (
                     <option key={cat.id} value={cat.id}>
@@ -579,7 +796,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </select>
               </div>
               <div>
-                <label className="block text-[11px] font-medium text-zinc-500 mb-1">
+                <label className="block text-xs font-medium text-zinc-500 mb-1">
                   标签（逗号分隔）
                 </label>
                 <input
@@ -587,14 +804,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   value={artTagsText}
                   onChange={(e) => setArtTagsText(e.target.value)}
                   placeholder="React, 笔记"
-                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
                 />
               </div>
             </div>
           </div>
 
           <div>
-            <label className="block text-[11px] font-medium text-zinc-500 mb-1">
+            <label className="block text-xs font-medium text-zinc-500 mb-1">
               文章摘要（选填，留空自动提取正文前 90 字）
             </label>
             <input
@@ -602,7 +819,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               value={artExcerpt}
               onChange={(e) => setArtExcerpt(e.target.value)}
               placeholder="一句话概括这篇文章的核心内容..."
-              className="w-full px-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
             />
           </div>
         </div>
@@ -651,7 +868,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 value={artContent}
                 onChange={(e) => setArtContent(e.target.value)}
                 placeholder="# 开始写作...&#10;&#10;支持标题、列表、代码块、引用和表格。"
-                className="flex-1 w-full p-4 text-xs sm:text-[13px] font-mono leading-relaxed bg-transparent text-zinc-900 dark:text-zinc-100 resize-none focus:outline-none min-h-[380px]"
+                className="flex-1 w-full p-4 text-sm font-mono leading-relaxed bg-transparent text-zinc-900 dark:text-zinc-100 resize-none focus:outline-none min-h-[420px]"
               />
             </div>
 
@@ -666,12 +883,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
               <div className="p-5 overflow-y-auto max-h-[540px]">
                 {artContent.trim() ? (
-                  <div
-                    className="prose-blog"
-                    dangerouslySetInnerHTML={{ __html: renderMarkdown(artContent) }}
-                  />
+                  <MarkdownBody html={renderMarkdown(artContent)} />
                 ) : (
-                  <p className="text-xs text-zinc-400 italic">左侧输入 Markdown 后，这里将实时预览排版效果…</p>
+                  <p className="text-sm text-zinc-400 italic">左侧输入 Markdown 后，这里将实时预览排版效果…</p>
                 )}
               </div>
             </div>
@@ -683,6 +897,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   return (
     <div className="space-y-4">
+      <ConfirmModal
+        isOpen={confirmAction !== null}
+        title="放弃未保存的改动？"
+        message={confirmMessage}
+        confirmLabel="放弃并离开"
+        cancelLabel="继续编辑"
+        onConfirm={() => {
+          const fn = confirmAction;
+          setConfirmAction(null);
+          fn?.();
+        }}
+        onCancel={() => setConfirmAction(null)}
+      />
+
       {/* Toast Notification */}
       {toast && (
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-medium shadow-lg">
@@ -692,14 +920,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       )}
 
       {/* Admin Top Header & Tabs */}
-      <div className="glass-card rounded-2xl p-4 sm:p-5 shadow-2xs space-y-4">
+      <div className="glass-card rounded-2xl p-5 sm:p-6 shadow-2xs space-y-4" data-rain-ledge>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h1 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-              <Settings className="w-4 h-4 text-zinc-500" />
+            <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+              <Settings className="w-5 h-5 text-zinc-500" />
               <span>管理后台</span>
             </h1>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
               内容管理、每日日报维护与站点配置（所有修改实时保存至数据库）
             </p>
           </div>
@@ -708,28 +936,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
           <button
             type="button"
-            onClick={() => setActiveTab('articles')}
+            onClick={() => handleTabSwitch('articles')}
             className={tabButtonClass('articles')}
           >
             文章管理 ({data.articles.length})
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('diaries')}
+            onClick={() => handleTabSwitch('diaries')}
             className={tabButtonClass('diaries')}
           >
             日记管理 ({data.diaries.length})
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('taxonomy')}
+            onClick={() => handleTabSwitch('taxonomy')}
             className={tabButtonClass('taxonomy')}
           >
             分类与标签
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('settings')}
+            onClick={() => handleTabSwitch('settings')}
             className={tabButtonClass('settings')}
           >
             站点设置
@@ -747,7 +975,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   key={status}
                   type="button"
                   onClick={() => setArticleFilter(status)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
                     articleFilter === status
                       ? 'bg-zinc-200 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100'
                       : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
@@ -761,32 +989,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 value={articleSearch}
                 onChange={(e) => setArticleSearch(e.target.value)}
                 placeholder="筛选标题..."
-                className="px-2.5 py-1 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 w-32 sm:w-44"
+                className="px-3 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 w-36 sm:w-52"
               />
             </div>
 
             <button
               type="button"
               onClick={() => openArticleEditor()}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4" />
               <span>新建文章</span>
             </button>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {filteredArticles.map((art) => {
               const cat = data.categories.find((c) => c.id === art.categoryId);
               return (
                 <div
                   key={art.id}
-                  className="glass-card rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  className="glass-card rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                 >
                   <div className="min-w-0 space-y-1">
-                    <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
                       <span
-                        className={`px-1.5 py-0.5 rounded font-medium ${
+                        className={`px-2 py-0.5 rounded font-medium ${
                           art.status === 'published'
                             ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
                             : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
@@ -795,7 +1023,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         {art.status === 'published' ? '已发布' : '草稿'}
                       </span>
                       {art.pinned && (
-                        <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 font-medium">
+                        <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 font-medium">
                           置顶
                         </span>
                       )}
@@ -806,7 +1034,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         {formatDateTimeLabel(art.publishedAt)}
                       </span>
                     </div>
-                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                    <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                       {art.title}
                     </h3>
                   </div>
@@ -864,12 +1092,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {activeTab === 'diaries' && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-zinc-500">管理所有私密每日日报与补写记录</p>
+            <p className="text-sm text-zinc-500">管理所有私密每日日报与补写记录</p>
             <button
               type="button"
               onClick={() => {
-                setIsNewDiary(true);
-                setEditingDiary({
+                const nextDiary: DiaryFormState = {
                   id: null,
                   date: getTodayDateStr(),
                   time: getNowTimeStr(),
@@ -877,11 +1104,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   content: DAILY_REPORT_TEMPLATE,
                   mood: 'focused',
                   tags: ['日报'],
-                });
+                };
+                diarySnapshotRef.current = JSON.stringify(nextDiary);
+                setIsNewDiary(true);
+                setEditingDiary(nextDiary);
               }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
             >
-              <NotebookPen className="w-3.5 h-3.5" />
+              <NotebookPen className="w-4 h-4" />
               <span>新建 / 补写日记</span>
             </button>
           </div>
@@ -910,7 +1140,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setEditingDiary(null)}
+                    onClick={() =>
+                      requestGuardedAction(
+                        isDiaryDirty,
+                        '当前日记有未保存的修改，关闭后改动将会丢失。',
+                        () => setEditingDiary(null),
+                      )
+                    }
                     className="p-1 text-zinc-400 hover:text-zinc-700"
                   >
                     <X className="w-4 h-4" />
@@ -950,7 +1186,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setEditingDiary(null)}
+                  onClick={() =>
+                    requestGuardedAction(
+                      isDiaryDirty,
+                      '当前日记有未保存的修改，关闭后改动将会丢失。',
+                      () => setEditingDiary(null),
+                    )
+                  }
                   disabled={savingDiary}
                   className="px-3 py-1.5 rounded-lg text-xs text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-60"
                 >
@@ -989,8 +1231,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <button
                       type="button"
                       onClick={() => {
+                        const editCopy: DiaryFormState = {
+                          id: d.id,
+                          date: d.date,
+                          time: d.time,
+                          title: d.title,
+                          mood: d.mood,
+                          tags: [...d.tags],
+                          content: d.content,
+                        };
+                        diarySnapshotRef.current = JSON.stringify(editCopy);
                         setIsNewDiary(false);
-                        setEditingDiary(d);
+                        setEditingDiary(editCopy);
                       }}
                       className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200"
                     >
@@ -1169,94 +1421,94 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
                 博客名称
               </label>
               <input
                 type="text"
                 value={settingsForm.blogTitle}
                 onChange={(e) => setSettingsForm({ ...settingsForm, blogTitle: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
                 副标题 / Slogan
               </label>
               <input
                 type="text"
                 value={settingsForm.blogSubtitle}
                 onChange={(e) => setSettingsForm({ ...settingsForm, blogSubtitle: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
                 博主昵称
               </label>
               <input
                 type="text"
                 value={settingsForm.authorName}
                 onChange={(e) => setSettingsForm({ ...settingsForm, authorName: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
                 个人主页 ID
               </label>
               <input
                 type="text"
                 value={settingsForm.authorHandle}
                 onChange={(e) => setSettingsForm({ ...settingsForm, authorHandle: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
                 所在城市
               </label>
               <input
                 type="text"
                 value={settingsForm.authorLocation}
                 onChange={(e) => setSettingsForm({ ...settingsForm, authorLocation: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
                 联系邮箱
               </label>
               <input
                 type="email"
                 value={settingsForm.authorEmail}
                 onChange={(e) => setSettingsForm({ ...settingsForm, authorEmail: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
               个人简介（左侧名片展示）
             </label>
             <textarea
               rows={2}
               value={settingsForm.authorBio}
               onChange={(e) => setSettingsForm({ ...settingsForm, authorBio: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
               「关于自己 / 个人简历」Markdown 内容
             </label>
             <textarea
               rows={8}
               value={settingsForm.aboutContent}
               onChange={(e) => setSettingsForm({ ...settingsForm, aboutContent: e.target.value })}
-              className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-zinc-200/80 dark:border-white/10 bg-white/70 dark:bg-white/5"
+              className="w-full px-3.5 py-2.5 text-sm font-mono rounded-xl border border-zinc-200/80 dark:border-white/10 bg-white/70 dark:bg-white/5"
             />
           </div>
 
@@ -1264,9 +1516,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <button
               type="submit"
               disabled={savingSettings}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-4.5 py-2 rounded-xl text-sm font-medium bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <Save className="w-3.5 h-3.5" />
+              <Save className="w-4 h-4" />
               <span>{savingSettings ? '保存中…' : '保存全部设置'}</span>
             </button>
           </div>

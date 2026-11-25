@@ -38,11 +38,11 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
       </button>
 
       <div className="flex items-center gap-2 min-w-0">
-        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+        <span className="text-base font-semibold text-zinc-900 dark:text-zinc-100 truncate">
           {blogTitle}
         </span>
         {isAdmin && (
-          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/15 text-emerald-700 border border-emerald-500/25 dark:text-emerald-300 shrink-0">
+          <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/15 text-emerald-700 border border-emerald-500/25 dark:text-emerald-300 shrink-0">
             管理中
           </span>
         )}
@@ -75,7 +75,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   onNavigate,
 }) => {
   const itemClass = (active: boolean) =>
-    `flex-1 flex flex-col items-center justify-center py-2 text-[11px] font-medium transition-colors ${
+    `flex-1 flex flex-col items-center justify-center py-2 text-xs font-medium transition-colors ${
       active
         ? 'text-indigo-600 dark:text-indigo-400'
         : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
@@ -168,8 +168,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
           side === 'left' ? 'mr-auto border-r' : 'ml-auto border-l'
         }`}
       >
-        <div className="h-13 px-4 border-b border-zinc-200/60 dark:border-white/10 flex items-center justify-between shrink-0">
-          <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{title}</span>
+        <div className="h-14 px-4 border-b border-zinc-200/60 dark:border-white/10 flex items-center justify-between shrink-0">
+          <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{title}</span>
           <button
             type="button"
             onClick={onClose}

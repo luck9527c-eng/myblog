@@ -1,14 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import * as api from './api/endpoints';
 import { ApiError, getErrorMessage, setUnauthorizedHandler } from './api/client';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ArticleFeed } from './components/ArticleFeed';
+import { ConfirmModal } from './components/ConfirmModal';
 import { DiaryView } from './components/DiaryView';
 import { LeftSidebar } from './components/LeftSidebar';
 import { LoginModal } from './components/LoginModal';
 import { MobileBottomNav, MobileDrawer, MobileTopBar } from './components/MobileNav';
 import { RightSidebar } from './components/RightSidebar';
+
+const RainBackground = lazy(() => import('./components/RainBackground'));
 import type {
   AdminTab,
   AppView,
@@ -28,8 +31,9 @@ import type {
 } from './types';
 import { extractHeadings } from './utils/markdown';
 
-/** 仅主题偏好保留在 localStorage（数据全部来自后端） */
+/** 仅主题偏好与氛围开关保留在 localStorage（内容数据全部来自后端） */
 const STORAGE_KEY_THEME = 'blog_gemini_proto_theme_v1';
+const STORAGE_KEY_RAIN = 'blog_gemini_proto_rain_v1';
 const FEED_PAGE_SIZE = 50;
 
 /** bootstrap 未到达前的占位站点配置，保证首屏不白屏 */
@@ -55,6 +59,20 @@ function loadInitialTheme(): ThemeMode {
   return 'light';
 }
 
+function loadInitialRain(): boolean {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY_RAIN);
+    if (saved === 'true') return true;
+    if (saved === 'false') return false;
+  } catch {
+    // ignore
+  }
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+  return true;
+}
+
 /** 归档接口只返回精简字段，这里补成 ArticleFeed 可消费的形状 */
 function archiveItemToArticle(item: ArchiveItem): Article {
   return {
@@ -74,8 +92,12 @@ function archiveItemToArticle(item: ArchiveItem): Article {
 
 export function App() {
   const [theme, setTheme] = useState<ThemeMode>(loadInitialTheme);
+  const [rainEnabled, setRainEnabled] = useState<boolean>(loadInitialRain);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [pendingNavAction, setPendingNavAction] = useState<(() => void) | null>(null);
+  const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
 
   // 启动 / 降级提示
   const [booting, setBooting] = useState(true);
@@ -143,6 +165,14 @@ export function App() {
       // ignore
     }
   }, [theme]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_RAIN, String(rainEnabled));
+    } catch {
+      // ignore
+    }
+  }, [rainEnabled]);
 
   // 站点标题
   useEffect(() => {
@@ -384,6 +414,41 @@ export function App() {
     return extractHeadings(articleDetail.content);
   }, [effectiveView, articleDetail]);
 
+  // 阅读长文时，右侧「文章目录」随滚动位置自动高亮当前章节
+  useEffect(() => {
+    if (effectiveView !== 'article' || tocHeadings.length === 0) {
+      setActiveHeadingId(null);
+      return;
+    }
+
+    const updateActiveHeading = () => {
+      const offset = 120;
+      let current: string | null = tocHeadings[0]?.id ?? null;
+      for (const h of tocHeadings) {
+        const el = document.getElementById(h.id);
+        if (!el) continue;
+        if (el.getBoundingClientRect().top <= offset) {
+          current = h.id;
+        } else {
+          break;
+        }
+      }
+      setActiveHeadingId(current);
+    };
+
+    updateActiveHeading();
+    window.addEventListener('scroll', updateActiveHeading, { passive: true });
+    return () => window.removeEventListener('scroll', updateActiveHeading);
+  }, [effectiveView, tocHeadings]);
+
+  const runWithUnsavedGuard = (action: () => void) => {
+    if (!hasUnsavedChanges) {
+      action();
+      return;
+    }
+    setPendingNavAction(() => action);
+  };
+
   const archiveArticles = useMemo(() => archiveItems.map(archiveItemToArticle), [archiveItems]);
 
   const adminData: BlogDataState = useMemo(
@@ -396,19 +461,24 @@ export function App() {
       setLoginModalOpen(true);
       return;
     }
-    // Reset cross-view conflicting filters when entering diary vs public pages
-    if ((view === 'diary') !== (effectiveView === 'diary')) {
-      setSearchQuery('');
-      setSelectedTag(null);
-    }
-    setCurrentView(view);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (view === effectiveView) return;
+    runWithUnsavedGuard(() => {
+      // Reset cross-view conflicting filters when entering diary vs public pages
+      if ((view === 'diary') !== (effectiveView === 'diary')) {
+        setSearchQuery('');
+        setSelectedTag(null);
+      }
+      setCurrentView(view);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   };
 
   const handleOpenArticle = (id: string) => {
-    setActiveArticleId(id);
-    setCurrentView('article');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    runWithUnsavedGuard(() => {
+      setActiveArticleId(id);
+      setCurrentView('article');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   };
 
   const clearAllFilters = () => {
@@ -428,16 +498,22 @@ export function App() {
   };
 
   const handleLogout = async (): Promise<void> => {
-    try {
-      await api.logout();
-    } catch (err) {
-      setNotice(`退出登录请求失败：${getErrorMessage(err)}`);
-    } finally {
-      setIsAdmin(false);
-      setAdminArticles([]);
-      setAdminDiaries([]);
-      setCurrentView((view) => (view === 'admin' || view === 'diary' ? 'home' : view));
-    }
+    const performLogout = async () => {
+      try {
+        await api.logout();
+      } catch (err) {
+        setNotice(`退出登录请求失败：${getErrorMessage(err)}`);
+      } finally {
+        setHasUnsavedChanges(false);
+        setIsAdmin(false);
+        setAdminArticles([]);
+        setAdminDiaries([]);
+        setCurrentView((view) => (view === 'admin' || view === 'diary' ? 'home' : view));
+      }
+    };
+    runWithUnsavedGuard(() => {
+      void performLogout();
+    });
   };
 
   // 写操作成功后的统一刷新：bootstrap 计数 + 公开列表 + 归档 +（可选）后台文章列表
@@ -536,6 +612,8 @@ export function App() {
       onLogout={handleLogout}
       theme={theme}
       onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+      rainEnabled={rainEnabled}
+      onToggleRain={() => setRainEnabled((r) => !r)}
       publishedCount={publishedCount}
       diaryCount={adminDiaries.length}
       onCloseMobileDrawer={onClose}
@@ -572,6 +650,7 @@ export function App() {
       diaries={adminDiaries}
       isAdmin={isAdmin}
       tocHeadings={tocHeadings}
+      activeHeadingId={activeHeadingId}
       onOpenArticle={handleOpenArticle}
       onCloseMobileDrawer={onClose}
     />
@@ -595,6 +674,13 @@ export function App() {
         />
       </div>
 
+      {/* Lazy-Loaded Three.js 3D Depth Rain + Bokeh Ambience */}
+      {rainEnabled && (
+        <Suspense fallback={null}>
+          <RainBackground theme={theme} />
+        </Suspense>
+      )}
+
       {/* Mobile Header */}
       <MobileTopBar
         blogTitle={settings.blogTitle}
@@ -605,30 +691,30 @@ export function App() {
       />
 
       {/* Desktop 3-Column Container */}
-      <div className="flex-1 w-full max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-4 pb-24 lg:py-8">
+      <div className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-5 pb-24 lg:py-8">
         {/* 后端连接状态 / 降级提示（不白屏） */}
         {booting && (
-          <div className="mb-3 glass-card rounded-2xl px-4 py-2.5 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-            <span className="w-3 h-3 rounded-full border-2 border-zinc-300 border-t-transparent animate-spin dark:border-zinc-600 dark:border-t-transparent" />
+          <div className="mb-4 glass-card rounded-2xl px-4 py-3 flex items-center gap-2.5 text-sm text-zinc-500 dark:text-zinc-400">
+            <span className="w-3.5 h-3.5 rounded-full border-2 border-zinc-300 border-t-transparent animate-spin dark:border-zinc-600 dark:border-t-transparent" />
             <span>正在连接后端，加载站点数据…</span>
           </div>
         )}
         {bootError && (
-          <div className="mb-3 glass-card rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs text-rose-600 dark:text-rose-400">
+          <div className="mb-4 glass-card rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm text-rose-600 dark:text-rose-400">
             <span className="min-w-0 break-words">
               站点数据加载失败：{bootError}（当前展示降级视图）
             </span>
             <button
               type="button"
               onClick={() => setBootAttempt((n) => n + 1)}
-              className="shrink-0 px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 font-medium"
+              className="shrink-0 px-3 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 font-medium"
             >
               重试
             </button>
           </div>
         )}
         {notice && (
-          <div className="mb-3 glass-card rounded-2xl px-4 py-2.5 flex items-center justify-between gap-3 text-xs text-amber-700 dark:text-amber-300">
+          <div className="mb-4 glass-card rounded-2xl px-4 py-3 flex items-center justify-between gap-3 text-sm text-amber-700 dark:text-amber-300">
             <span className="min-w-0 break-words">{notice}</span>
             <button
               type="button"
@@ -636,21 +722,21 @@ export function App() {
               className="shrink-0 p-1 rounded-lg hover:bg-amber-500/15"
               aria-label="关闭提示"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         )}
 
         <div
-          className={`grid grid-cols-1 gap-6 ${
+          className={`grid grid-cols-1 gap-6 xl:gap-8 ${
             effectiveView === 'admin'
-              ? 'lg:grid-cols-[248px_minmax(0,1fr)]'
-              : 'lg:grid-cols-[248px_minmax(0,1fr)_272px]'
+              ? 'lg:grid-cols-[264px_minmax(0,1fr)] xl:grid-cols-[288px_minmax(0,1fr)]'
+              : 'lg:grid-cols-[264px_minmax(0,1fr)_280px] xl:grid-cols-[288px_minmax(0,1fr)_312px]'
           }`}
         >
           {/* Left Column (Desktop Sticky) */}
           <aside className="hidden lg:block">
-            <div className="sticky top-8 h-[calc(100vh-4rem)]">{leftSidebarNode()}</div>
+            <div className="sticky top-6 h-[calc(100vh-3rem)]">{leftSidebarNode()}</div>
           </aside>
 
           {/* Center Main Column */}
@@ -674,6 +760,7 @@ export function App() {
                 onSaveSettings={handleSaveSettings}
                 onChangePassword={handleChangePassword}
                 onPreviewArticle={handleOpenArticle}
+                onDirtyChange={setHasUnsavedChanges}
               />
             ) : effectiveView === 'diary' && isAdmin ? (
               <DiaryView
@@ -684,6 +771,7 @@ export function App() {
                 onClearFilters={clearAllFilters}
                 onSaveDiary={handleSaveDiary}
                 onDeleteDiary={handleDeleteDiary}
+                onDirtyChange={setHasUnsavedChanges}
               />
             ) : (
               <ArticleFeed
@@ -742,7 +830,7 @@ export function App() {
           {/* Right Column (Desktop Sticky - hidden inside Admin Backend to give editor full space) */}
           {effectiveView !== 'admin' && (
             <aside className="hidden lg:block">
-              <div className="sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto pr-0.5">
+              <div className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto pr-0.5">
                 {rightSidebarNode()}
               </div>
             </aside>
@@ -781,6 +869,22 @@ export function App() {
         isOpen={loginModalOpen}
         onClose={() => setLoginModalOpen(false)}
         onSubmit={handleLogin}
+      />
+
+      {/* Navigation Guard Modal for Unsaved Editor Changes */}
+      <ConfirmModal
+        isOpen={pendingNavAction !== null}
+        title="离开当前编辑页？"
+        message="当前编辑器有未保存的改动，切换页面将会丢失这些内容。"
+        confirmLabel="放弃并离开"
+        cancelLabel="留在当前页"
+        onConfirm={() => {
+          const action = pendingNavAction;
+          setPendingNavAction(null);
+          setHasUnsavedChanges(false);
+          action?.();
+        }}
+        onCancel={() => setPendingNavAction(null)}
       />
     </div>
   );

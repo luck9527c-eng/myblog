@@ -70,6 +70,29 @@ export function renderMarkdown(markdown: string): string {
   return DOMPurify.sanitize(html);
 }
 
+export interface ReadingStats {
+  wordCount: number;
+  minutes: number;
+}
+
+export function estimateReadingStats(markdown: string): ReadingStats {
+  const plain = markdown
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`[^`]*`/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/[#>*_~\-|]/g, ' ')
+    .trim();
+
+  const cjkMatches = plain.match(/[\u4e00-\u9fa5]/g);
+  const cjkCount = cjkMatches ? cjkMatches.length : 0;
+  const nonCjkText = plain.replace(/[\u4e00-\u9fa5]/g, ' ').trim();
+  const latinWords = nonCjkText ? nonCjkText.split(/\s+/).filter(Boolean).length : 0;
+  const wordCount = cjkCount + latinWords;
+  const minutes = Math.max(1, Math.ceil(wordCount / 350));
+  return { wordCount, minutes };
+}
+
 export const DAILY_REPORT_TEMPLATE = `### 今日完成
 - 
 
