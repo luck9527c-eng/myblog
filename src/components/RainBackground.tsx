@@ -13,6 +13,47 @@ interface LedgeRect {
 }
 
 /**
+ * 整场雨（雨丝 / 柔光斑 / 溅落水花 / 扩散圈）共用的冰蓝青配色。
+ * 浅色与深色各一套：浅底上用 cyan-600/500 保证可见度，深底上用 cyan-300/100 更亮更冷。
+ */
+interface RainPalette {
+  rainColor: number;
+  rainOpacity: number;
+  bokehColorA: number;
+  bokehColorB: number;
+  bokehOpacity: number;
+  splashColor: number;
+  splashOpacity: number;
+  ringColor: number;
+  ringOpacity: number;
+}
+
+const RAIN_PALETTE: Record<ThemeMode, RainPalette> = {
+  light: {
+    rainColor: 0x0891b2, // cyan-600
+    rainOpacity: 0.2,
+    bokehColorA: 0x06b6d4, // cyan-500
+    bokehColorB: 0x22d3ee, // cyan-400
+    bokehOpacity: 0.16,
+    splashColor: 0x06b6d4, // cyan-500
+    splashOpacity: 0.62,
+    ringColor: 0x0891b2, // cyan-600
+    ringOpacity: 0.44,
+  },
+  dark: {
+    rainColor: 0x67e8f9, // cyan-300
+    rainOpacity: 0.26,
+    bokehColorA: 0x22d3ee, // cyan-400
+    bokehColorB: 0x67e8f9, // cyan-300
+    bokehOpacity: 0.22,
+    splashColor: 0xcffafe, // cyan-100
+    splashOpacity: 0.85,
+    ringColor: 0x67e8f9, // cyan-300
+    ringOpacity: 0.56,
+  },
+};
+
+/**
  * Three.js 3D depth rain + out-of-focus bokeh + column-top rain splash ambience layer.
  * Splashes land directly along the top borders of visible `[data-rain-ledge]` column headers.
  */
@@ -118,10 +159,12 @@ export const RainBackground: React.FC<RainBackgroundProps> = ({ theme }) => {
     const rainGeometry = new THREE.BufferGeometry();
     rainGeometry.setAttribute('position', new THREE.BufferAttribute(rainPositions, 3));
 
+    const initialPalette = RAIN_PALETTE[themeRef.current];
+
     const rainMaterial = new THREE.LineBasicMaterial({
-      color: themeRef.current === 'dark' ? 0x93c5fd : 0x4f46e5,
+      color: initialPalette.rainColor,
       transparent: true,
-      opacity: themeRef.current === 'dark' ? 0.26 : 0.18,
+      opacity: initialPalette.rainOpacity,
       depthWrite: false,
     });
 
@@ -156,13 +199,9 @@ export const RainBackground: React.FC<RainBackgroundProps> = ({ theme }) => {
       blending: THREE.AdditiveBlending,
       uniforms: {
         uTime: { value: 0 },
-        uColorA: {
-          value: new THREE.Color(themeRef.current === 'dark' ? 0x38bdf8 : 0x6366f1),
-        },
-        uColorB: {
-          value: new THREE.Color(themeRef.current === 'dark' ? 0x818cf8 : 0x0ea5e9),
-        },
-        uOpacity: { value: themeRef.current === 'dark' ? 0.22 : 0.14 },
+        uColorA: { value: new THREE.Color(initialPalette.bokehColorA) },
+        uColorB: { value: new THREE.Color(initialPalette.bokehColorB) },
+        uOpacity: { value: initialPalette.bokehOpacity },
         uPixelRatio: { value: pixelRatio },
       },
       vertexShader: `
@@ -228,10 +267,8 @@ export const RainBackground: React.FC<RainBackgroundProps> = ({ theme }) => {
       depthWrite: false,
       blending: THREE.NormalBlending,
       uniforms: {
-        uColor: {
-          value: new THREE.Color(themeRef.current === 'dark' ? 0xe0f2fe : 0x3b82f6),
-        },
-        uOpacity: { value: themeRef.current === 'dark' ? 0.85 : 0.62 },
+        uColor: { value: new THREE.Color(initialPalette.splashColor) },
+        uOpacity: { value: initialPalette.splashOpacity },
         uPixelRatio: { value: pixelRatio },
       },
       vertexShader: `
@@ -288,10 +325,8 @@ export const RainBackground: React.FC<RainBackgroundProps> = ({ theme }) => {
       depthWrite: false,
       blending: THREE.NormalBlending,
       uniforms: {
-        uColor: {
-          value: new THREE.Color(themeRef.current === 'dark' ? 0xbae6fd : 0x4f46e5),
-        },
-        uOpacity: { value: themeRef.current === 'dark' ? 0.56 : 0.4 },
+        uColor: { value: new THREE.Color(initialPalette.ringColor) },
+        uOpacity: { value: initialPalette.ringOpacity },
         uPixelRatio: { value: pixelRatio },
       },
       vertexShader: `
@@ -434,27 +469,16 @@ export const RainBackground: React.FC<RainBackgroundProps> = ({ theme }) => {
     let activeTheme: ThemeMode = themeRef.current;
 
     const syncThemeColors = (mode: ThemeMode) => {
-      if (mode === 'dark') {
-        rainMaterial.color.setHex(0x93c5fd);
-        rainMaterial.opacity = 0.26;
-        bokehMaterial.uniforms.uColorA.value.setHex(0x38bdf8);
-        bokehMaterial.uniforms.uColorB.value.setHex(0x818cf8);
-        bokehMaterial.uniforms.uOpacity.value = 0.22;
-        splashMaterial.uniforms.uColor.value.setHex(0xe0f2fe);
-        splashMaterial.uniforms.uOpacity.value = 0.85;
-        ringMaterial.uniforms.uColor.value.setHex(0xbae6fd);
-        ringMaterial.uniforms.uOpacity.value = 0.56;
-      } else {
-        rainMaterial.color.setHex(0x4f46e5);
-        rainMaterial.opacity = 0.18;
-        bokehMaterial.uniforms.uColorA.value.setHex(0x6366f1);
-        bokehMaterial.uniforms.uColorB.value.setHex(0x0ea5e9);
-        bokehMaterial.uniforms.uOpacity.value = 0.14;
-        splashMaterial.uniforms.uColor.value.setHex(0x3b82f6);
-        splashMaterial.uniforms.uOpacity.value = 0.62;
-        ringMaterial.uniforms.uColor.value.setHex(0x4f46e5);
-        ringMaterial.uniforms.uOpacity.value = 0.4;
-      }
+      const palette = RAIN_PALETTE[mode];
+      rainMaterial.color.setHex(palette.rainColor);
+      rainMaterial.opacity = palette.rainOpacity;
+      bokehMaterial.uniforms.uColorA.value.setHex(palette.bokehColorA);
+      bokehMaterial.uniforms.uColorB.value.setHex(palette.bokehColorB);
+      bokehMaterial.uniforms.uOpacity.value = palette.bokehOpacity;
+      splashMaterial.uniforms.uColor.value.setHex(palette.splashColor);
+      splashMaterial.uniforms.uOpacity.value = palette.splashOpacity;
+      ringMaterial.uniforms.uColor.value.setHex(palette.ringColor);
+      ringMaterial.uniforms.uOpacity.value = palette.ringOpacity;
     };
 
     const tick = (now: number) => {
