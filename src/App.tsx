@@ -664,14 +664,6 @@ export function App() {
         <div className="absolute -top-32 -left-24 w-[480px] h-[480px] rounded-full bg-indigo-300/35 dark:bg-indigo-600/20 blur-[110px]" />
         <div className="absolute top-1/4 -right-24 w-[440px] h-[440px] rounded-full bg-sky-300/35 dark:bg-cyan-500/15 blur-[110px]" />
         <div className="absolute -bottom-32 left-1/3 w-[520px] h-[520px] rounded-full bg-rose-200/35 dark:bg-purple-600/15 blur-[120px]" />
-        <div
-          className="absolute inset-0 opacity-[0.35] dark:opacity-[0.18]"
-          style={{
-            backgroundImage:
-              'radial-gradient(rgba(100,116,139,0.22) 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
-          }}
-        />
       </div>
 
       {/* Lazy-Loaded Three.js 3D Depth Rain + Bokeh Ambience */}
