@@ -7,6 +7,11 @@
   /* 一屏高度的"缩放坐标系"版本。
      CSS zoom 会把 100vh 一起放大，直接用 100vh 会超出视口，除以缩放比才正好等于一屏。 */
   --app-vh: calc(100vh / var(--ui-zoom, 1));
+
+  /* 玻璃卡片的细颗粒（哑光质感）。用 feTurbulence 生成灰度噪点，
+     强度靠 rect 的 opacity 控制：浅色 0.15 / 深色 0.10，再高就会显脏。 */
+  --glass-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.15'/%3E%3C/svg%3E");
+  --glass-grain-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.10'/%3E%3C/svg%3E");
 }
 
 @layer base {
@@ -34,72 +39,101 @@
   }
 }
 
-/* Frosted glass surface tokens */
+/* Frosted glass surface tokens
+   质感来源：①底色走 background-color（可过渡，hover 才顺滑）
+   ②一层自上而下的浅色渐变做"顶光"③顶部 1px 高光 + 底部 1px 内阴影（玻璃边缘的厚薄）
+   ④更强的 backdrop blur/saturate（磨砂）
+   外投影只用「2px 接触影 + 负扩散的蓝调环境影」，暗部压在卡片自身下方，
+   不会向外铺成一圈中性灰雾。
+   透明度调法：改 background-color 的 alpha（越小越透）；顶光强度改渐变第一段的 alpha。 */
 @layer components {
   .glass-card {
-    background-color: rgba(255, 255, 255, 0.68);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.72);
+    background-color: rgba(255, 255, 255, 0.44);
+    /* 第一层细颗粒（哑光），第二层顶光渐变 */
+    background-image: var(--glass-grain),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 100%);
+    backdrop-filter: blur(24px) saturate(175%) brightness(1.02);
+    -webkit-backdrop-filter: blur(24px) saturate(175%) brightness(1.02);
+    border: 1px solid rgba(255, 255, 255, 0.9);
     box-shadow:
-      0 8px 30px rgba(15, 23, 42, 0.05),
-      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      inset 0 1px 0 rgba(255, 255, 255, 1),
+      inset 0 -1px 0 rgba(15, 23, 42, 0.04),
+      /* 接触影：只有 2px，紧贴边缘，不向外铺开 */
+      0 1px 2px rgba(15, 23, 42, 0.05),
+      /* 环境影：负扩散 -16px 收在卡片下方，且是蓝调而非中性灰 */
+      0 12px 30px -16px rgba(37, 99, 235, 0.22);
   }
 
   .dark .glass-card {
-    background-color: rgba(20, 24, 36, 0.58);
-    border: 1px solid rgba(255, 255, 255, 0.09);
+    background-color: rgba(20, 25, 37, 0.42);
+    background-image: var(--glass-grain-dark),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow:
-      0 12px 32px rgba(0, 0, 0, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+      0 1px 2px rgba(0, 0, 0, 0.35),
+      0 14px 34px -18px rgba(56, 189, 248, 0.16);
   }
 
   .glass-card-interactive {
-    background-color: rgba(255, 255, 255, 0.68);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.75);
+    background-color: rgba(255, 255, 255, 0.46);
+    background-image: var(--glass-grain),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 100%);
+    backdrop-filter: blur(24px) saturate(175%) brightness(1.02);
+    -webkit-backdrop-filter: blur(24px) saturate(175%) brightness(1.02);
+    border: 1px solid rgba(255, 255, 255, 0.92);
     box-shadow:
-      0 6px 24px rgba(15, 23, 42, 0.045),
-      inset 0 1px 0 rgba(255, 255, 255, 0.85);
+      inset 0 1px 0 rgba(255, 255, 255, 1),
+      inset 0 -1px 0 rgba(15, 23, 42, 0.03),
+      0 1px 2px rgba(15, 23, 42, 0.05),
+      0 12px 30px -16px rgba(37, 99, 235, 0.2);
     transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease, border-color 0.22s ease;
   }
 
   .glass-card-interactive:hover {
-    background-color: rgba(255, 255, 255, 0.82);
-    border-color: rgba(255, 255, 255, 0.95);
+    background-color: rgba(255, 255, 255, 0.66);
+    border-color: rgba(255, 255, 255, 1);
     box-shadow:
-      0 14px 36px rgba(15, 23, 42, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      inset 0 1px 0 rgba(255, 255, 255, 1),
+      inset 0 -1px 0 rgba(15, 23, 42, 0.04),
+      0 2px 4px rgba(15, 23, 42, 0.07),
+      0 18px 40px -18px rgba(37, 99, 235, 0.28);
     transform: translateY(-1px);
   }
 
   .dark .glass-card-interactive {
-    background-color: rgba(20, 24, 36, 0.56);
-    border: 1px solid rgba(255, 255, 255, 0.09);
+    background-color: rgba(20, 25, 37, 0.4);
+    background-image: var(--glass-grain-dark),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow:
-      0 10px 28px rgba(0, 0, 0, 0.32),
-      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.38),
+      0 1px 2px rgba(0, 0, 0, 0.32),
+      0 14px 34px -18px rgba(56, 189, 248, 0.14);
   }
 
   .dark .glass-card-interactive:hover {
-    background-color: rgba(26, 31, 46, 0.72);
+    background-color: rgba(34, 40, 57, 0.6);
     border-color: rgba(255, 255, 255, 0.16);
     box-shadow:
-      0 16px 38px rgba(0, 0, 0, 0.45),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+      0 2px 6px rgba(0, 0, 0, 0.4),
+      0 20px 44px -20px rgba(56, 189, 248, 0.2);
   }
 
   .glass-input {
-    background-color: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.75);
+    background-color: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(20px) saturate(170%);
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.85);
     box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
   }
 
   .dark .glass-input {
-    background-color: rgba(20, 24, 36, 0.6);
+    background-color: rgba(20, 24, 36, 0.44);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
   }
