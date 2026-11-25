@@ -6,6 +6,8 @@ dist/
 # 日志
 *.log
 npm-debug.log*
+# 本地启动日志与调试截图
+.dev-logs/
 
 # 环境变量与密钥（严禁提交）
 .env
