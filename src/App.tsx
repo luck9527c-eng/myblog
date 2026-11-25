@@ -657,7 +657,7 @@ export function App() {
   );
 
   return (
-    <div className="relative min-h-screen flex flex-col">
+    <div className="relative min-h-[var(--app-vh)] flex flex-col">
       {/* Ambient Mesh Gradient Backdrop for Frosted Glass Refraction */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden="true">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-indigo-50/70 to-sky-100/80 dark:from-[#07090f] dark:via-[#0b1020] dark:to-[#0d0b1a]" />
@@ -736,7 +736,7 @@ export function App() {
         >
           {/* Left Column (Desktop Sticky) */}
           <aside className="hidden lg:block">
-            <div className="sticky top-6 h-[calc(100vh-3rem)]">{leftSidebarNode()}</div>
+            <div className="sticky top-6 h-[calc(var(--app-vh)-3rem)]">{leftSidebarNode()}</div>
           </aside>
 
           {/* Center Main Column */}
@@ -830,7 +830,7 @@ export function App() {
           {/* Right Column (Desktop Sticky - hidden inside Admin Backend to give editor full space) */}
           {effectiveView !== 'admin' && (
             <aside className="hidden lg:block">
-              <div className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto pr-0.5">
+              <div className="sticky top-6 max-h-[calc(var(--app-vh)-3rem)] overflow-y-auto pr-0.5">
                 {rightSidebarNode()}
               </div>
             </aside>
