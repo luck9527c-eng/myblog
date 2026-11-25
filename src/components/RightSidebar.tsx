@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Folder, Hash, ListTree, Search, Sparkles, X } from 'lucide-react';
-import type { AppView, Article, Category, DiaryEntry } from '../types';
+import type { AppView, Article, Category, DiaryEntry, TagStat } from '../types';
 import { formatDateOnly } from '../utils/date';
 import type { TocHeading } from '../utils/markdown';
 
@@ -12,8 +12,12 @@ interface RightSidebarProps {
   onSelectCategory: (id: string | null) => void;
   selectedTag: string | null;
   onSelectTag: (tag: string | null) => void;
+  /** bootstrap 返回的分类（含已发布文章数 articleCount） */
   categories: Category[];
+  /** 首页已加载的文章（仅用于「近期更新」） */
   publishedArticles: Article[];
+  /** bootstrap 返回的已发布文章标签统计 */
+  tagStats: TagStat[];
   diaries: DiaryEntry[];
   isAdmin: boolean;
   tocHeadings: TocHeading[];
@@ -31,6 +35,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   onSelectTag,
   categories,
   publishedArticles,
+  tagStats,
   diaries,
   isAdmin,
   tocHeadings,
@@ -39,25 +44,15 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
 }) => {
   const isDiaryMode = isAdmin && currentView === 'diary';
 
-  const categoryCounts = useMemo(() => {
-    const map: Record<string, number> = {};
-    publishedArticles.forEach((a) => {
-      map[a.categoryId] = (map[a.categoryId] || 0) + 1;
-    });
-    return map;
-  }, [publishedArticles]);
-
-  const allTags = useMemo(() => {
-    const map = new Map<string, number>();
+  const allTags = useMemo<Array<[string, number]>>(() => {
     if (isDiaryMode) {
+      const map = new Map<string, number>();
       diaries.forEach((d) => d.tags.forEach((t) => map.set(t, (map.get(t) || 0) + 1)));
-    } else {
-      publishedArticles.forEach((a) =>
-        a.tags.forEach((t) => map.set(t, (map.get(t) || 0) + 1)),
-      );
+      return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
     }
-    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
-  }, [publishedArticles, diaries, isDiaryMode]);
+    const rendered: Array<[string, number]> = tagStats.map((stat) => [stat.name, stat.count]);
+    return rendered.sort((a, b) => b[1] - a[1]);
+  }, [diaries, tagStats, isDiaryMode]);
 
   const recentArticles = useMemo(() => {
     return [...publishedArticles]
@@ -164,7 +159,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     <span className="truncate">{cat.name}</span>
                   </span>
                   <span className="text-[11px] opacity-70 tabular-nums">
-                    {categoryCounts[cat.id] || 0}
+                    {cat.articleCount ?? 0}
                   </span>
                 </button>
               );

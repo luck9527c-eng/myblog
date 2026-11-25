@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Check,
   Clock,
@@ -94,6 +94,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('articles');
   const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<number | null>(null);
 
   // Article List & Editor State
   const [articleFilter, setArticleFilter] = useState<'all' | ArticleStatus>('all');
@@ -146,9 +147,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   }, [data.settings]);
 
   const showToast = (msg: string) => {
+    if (toastTimer.current !== null) {
+      window.clearTimeout(toastTimer.current);
+    }
     setToast(msg);
-    setTimeout(() => setToast(null), 2600);
+    toastTimer.current = window.setTimeout(() => {
+      toastTimer.current = null;
+      setToast(null);
+    }, 2600);
   };
+
+  useEffect(
+    () => () => {
+      if (toastTimer.current !== null) {
+        window.clearTimeout(toastTimer.current);
+        toastTimer.current = null;
+      }
+    },
+    [],
+  );
 
   const openArticleEditor = (article?: Article) => {
     if (article) {
@@ -187,15 +204,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   }, [initialTab]);
 
   useEffect(() => {
-    if (initialEditArticleId) {
-      const target = data.articles.find((a) => a.id === initialEditArticleId);
-      if (target) {
-        setActiveTab('articles');
-        openArticleEditor(target);
-      }
-      onClearInitialEditArticle();
-    }
-  }, [initialEditArticleId]);
+    if (!initialEditArticleId) return;
+    const target = data.articles.find((a) => a.id === initialEditArticleId);
+    // 后台列表还在加载时先不清除请求，等数据到位再打开，避免编辑意图丢失
+    if (!target) return;
+    setActiveTab('articles');
+    openArticleEditor(target);
+    onClearInitialEditArticle();
+  }, [initialEditArticleId, data.articles]);
 
   const handleSaveArticleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
