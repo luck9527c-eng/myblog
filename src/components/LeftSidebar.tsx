@@ -61,8 +61,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
     }`;
 
   return (
-    <div className="flex flex-col h-full justify-between gap-4">
-      <div className="space-y-4 overflow-y-auto pr-0.5">
+    <div className="flex flex-col h-full gap-4">
+      <div className="min-h-0 space-y-4 overflow-y-auto pr-0.5">
         {/* Blogger Profile Card */}
         <div className="glass-card rounded-2xl p-4.5" data-rain-ledge>
           <div className="flex items-center gap-3.5">
@@ -195,7 +195,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
       </div>
 
       {/* Bottom Controls: Theme + Subtle Admin Entry */}
-      <div className="glass-card rounded-2xl p-3 space-y-1.5">
+      <div className="glass-card rounded-2xl p-3 space-y-1.5 shrink-0">
         <div className="flex items-center justify-between px-2 py-1">
           <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300 min-w-0">
             <BookOpen className="w-4 h-4 text-indigo-500 shrink-0" />
