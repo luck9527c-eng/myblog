@@ -14,9 +14,16 @@ uvicorn==0.34.0
 
 # ---------- 数据库 / ORM / 迁移 ----------
 SQLAlchemy==2.0.36
+# SQLAlchemy 的 async 支持（AsyncSession / async engine）底层依赖 greenlet。
+# SQLAlchemy 2.0 只按平台条件性安装它，这里显式固定，避免目标镜像里缺包。
+greenlet==3.1.1
 aiomysql==0.2.0
 PyMySQL==1.1.1
 alembic==1.14.0
+# PyMySQL/aiomysql 连接 MySQL 8 默认的 caching_sha2_password 认证方式时依赖该包，
+# 缺失会抛 "cryptography package is required for sha256_password or caching_sha2_password
+# auth methods"。43.0.3 提供 manylinux wheel（cp37-abi3），python:3.12-slim 直接可用。
+cryptography==43.0.3
 
 # ---------- 配置与校验 ----------
 pydantic==2.10.4

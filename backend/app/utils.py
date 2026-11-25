@@ -10,6 +10,8 @@ import datetime as dt
 import re
 from zoneinfo import ZoneInfo
 
+from sqlalchemy import or_, select
+
 try:  # 正常镜像内包含 tzdata；极少数精简镜像缺失时退回固定 +08:00（上海无夏令时）
     SHANGHAI_TZ: dt.tzinfo = ZoneInfo("Asia/Shanghai")
 except Exception:  # pragma: no cover - 兜底分支
@@ -231,3 +233,48 @@ def normalize_tag_list(values: object) -> list[str]:
         seen.add(key)
         result.append(name)
     return result
+
+
+# ---------------------------------------------------------------------------
+# 查询辅助（public 与 admin 路由共用的文章筛选条件）
+# ---------------------------------------------------------------------------
+def parse_optional_id(value: object, *, field: str = "id") -> int | None:
+    """查询参数里的可选数字 ID：空串/None -> None，非数字抛 ValueError。"""
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        return int(text)
+    except (TypeError, ValueError):
+        raise ValueError(f"参数 {field} 不合法，应为数字 ID") from None
+
+
+def article_ids_by_tag_name(tag_name: str) -> object:
+    """返回「拥有指定标签的文章 id」子查询（标签名按库默认 utf8mb4_unicode_ci 精确匹配）。"""
+    from .models import Tag, article_tags  # 局部导入：避免与 models 形成顶层循环依赖
+
+    return (
+        select(article_tags.c.article_id)
+        .join(Tag, Tag.id == article_tags.c.tag_id)
+        .where(Tag.name == tag_name)
+    )
+
+
+def article_search_clause(keyword: str) -> object:
+    """``q`` 模糊检索：匹配标题 / 摘要 / 正文 / 标签名（任一命中即可）。"""
+    from .models import Article, Tag, article_tags  # 局部导入：避免与 models 形成顶层循环依赖
+
+    pattern = like_pattern(keyword)
+    tagged_article_ids = (
+        select(article_tags.c.article_id)
+        .join(Tag, Tag.id == article_tags.c.tag_id)
+        .where(Tag.name.like(pattern, escape=LIKE_ESCAPE))
+    )
+    return or_(
+        Article.title.like(pattern, escape=LIKE_ESCAPE),
+        Article.excerpt.like(pattern, escape=LIKE_ESCAPE),
+        Article.content.like(pattern, escape=LIKE_ESCAPE),
+        Article.id.in_(tagged_article_ids),
+    )

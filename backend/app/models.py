@@ -22,7 +22,7 @@ from sqlalchemy.dialects.mysql import (
     DATE,
     DATETIME,
     ENUM,
-    INT,
+    INTEGER,
     JSON,
     MEDIUMTEXT,
     TIME,
@@ -68,7 +68,7 @@ class SiteSetting(Base):
     admin_password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     #: 改密后递增，用于让旧会话失效
     token_version: Mapped[int] = mapped_column(
-        INT(unsigned=True), nullable=False, default=1, server_default=text("1")
+        INTEGER(unsigned=True), nullable=False, default=1, server_default=text("1")
     )
     updated_at: Mapped[dt.datetime] = mapped_column(
         DATETIME, nullable=False, server_default=_UPDATED_AT_SERVER_DEFAULT
@@ -88,7 +88,7 @@ class Category(Base):
     name: Mapped[str] = mapped_column(String(64), nullable=False)
     description: Mapped[str] = mapped_column(String(255), nullable=False, server_default=text("''"))
     dot_color: Mapped[str] = mapped_column(String(20), nullable=False, server_default=text("'#3b82f6'"))
-    sort_order: Mapped[int] = mapped_column(INT, nullable=False, default=0, server_default=text("0"))
+    sort_order: Mapped[int] = mapped_column(INTEGER, nullable=False, default=0, server_default=text("0"))
     created_at: Mapped[dt.datetime] = mapped_column(
         DATETIME, nullable=False, server_default=text("CURRENT_TIMESTAMP")
     )

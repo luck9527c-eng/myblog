@@ -139,10 +139,14 @@ def main() -> int:  # noqa: C901 - 线性验收脚本，保持可读
         if isinstance(article, dict):
             created_articles.append(str(article["id"]))
             published_at = str(article.get("publishedAt", ""))
+            try:
+                drift = abs((datetime.now() - datetime.fromisoformat(published_at)).total_seconds())
+            except ValueError:
+                drift = float("inf")
             record(
-                published_at[:4] == datetime.now().strftime("%Y-%m"),
-                "未传 publishedAt 时落库为当前上海时间",
-                published_at,
+                drift < 300,
+                "未传 publishedAt 时落库为当前上海时间（±5 分钟内）",
+                f"{published_at} drift={drift}",
             )
             record(article.get("status") == "published" and article.get("pinned") is False, "默认 status=published 且未置顶")
             record(bool(article.get("excerpt")), "留空 excerpt 时后端自动截取正文", str(article.get("excerpt")))
