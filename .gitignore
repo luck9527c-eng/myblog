@@ -1,0 +1,33 @@
+# 依赖与构建产物
+node_modules/
+dist/
+*.tsbuildinfo
+
+# 日志
+*.log
+npm-debug.log*
+
+# 环境变量与密钥（严禁提交）
+.env
+.env.*
+!.env.example
+deploy/.env
+backend/.env
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+backend/.venv/
+backend/.venv-backend/
+.mypy_cache/
+.ruff_cache/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

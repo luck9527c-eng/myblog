@@ -1,0 +1,276 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  html {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+      "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #eef2f7;
+    color: #18181b;
+    min-height: 100vh;
+  }
+
+  .dark body {
+    background-color: #07090f;
+    color: #f4f4f5;
+  }
+}
+
+/* Frosted glass surface tokens */
+@layer components {
+  .glass-card {
+    background-color: rgba(255, 255, 255, 0.68);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    box-shadow:
+      0 8px 30px rgba(15, 23, 42, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+
+  .dark .glass-card {
+    background-color: rgba(20, 24, 36, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow:
+      0 12px 32px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .glass-card-interactive {
+    background-color: rgba(255, 255, 255, 0.68);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow:
+      0 6px 24px rgba(15, 23, 42, 0.045),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease, border-color 0.22s ease;
+  }
+
+  .glass-card-interactive:hover {
+    background-color: rgba(255, 255, 255, 0.82);
+    border-color: rgba(255, 255, 255, 0.95);
+    box-shadow:
+      0 14px 36px rgba(15, 23, 42, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    transform: translateY(-1px);
+  }
+
+  .dark .glass-card-interactive {
+    background-color: rgba(20, 24, 36, 0.56);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow:
+      0 10px 28px rgba(0, 0, 0, 0.32),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .dark .glass-card-interactive:hover {
+    background-color: rgba(26, 31, 46, 0.72);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow:
+      0 16px 38px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-input {
+    background-color: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+  }
+
+  .dark .glass-input {
+    background-color: rgba(20, 24, 36, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(113, 113, 122, 0.28);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(113, 113, 122, 0.48);
+}
+
+/* Typography for rendered Markdown */
+.prose-blog {
+  font-size: 0.96875rem;
+  line-height: 1.78;
+  color: #27272a;
+  word-break: break-word;
+}
+
+.dark .prose-blog {
+  color: #d4d4d8;
+}
+
+.prose-blog h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #09090b;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.35;
+}
+.dark .prose-blog h1 {
+  color: #fafafa;
+}
+
+.prose-blog h2 {
+  font-size: 1.2rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: #09090b;
+  margin-top: 1.65rem;
+  margin-bottom: 0.7rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(161, 161, 170, 0.28);
+}
+.dark .prose-blog h2 {
+  color: #fafafa;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.prose-blog h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #18181b;
+  margin-top: 1.25rem;
+  margin-bottom: 0.45rem;
+}
+.dark .prose-blog h3 {
+  color: #f4f4f5;
+}
+
+.prose-blog p {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose-blog ul,
+.prose-blog ol {
+  margin-top: 0.6rem;
+  margin-bottom: 0.75rem;
+  padding-left: 1.4rem;
+}
+
+.prose-blog ul {
+  list-style-type: disc;
+}
+
+.prose-blog ol {
+  list-style-type: decimal;
+}
+
+.prose-blog li {
+  margin-top: 0.28rem;
+  margin-bottom: 0.28rem;
+}
+
+.prose-blog li > input[type="checkbox"] {
+  margin-right: 0.5rem;
+  accent-color: #2563eb;
+}
+
+.prose-blog blockquote {
+  margin: 1rem 0;
+  padding: 0.65rem 1rem;
+  border-left: 3px solid #6366f1;
+  background-color: rgba(255, 255, 255, 0.55);
+  border-radius: 0 0.65rem 0.65rem 0;
+  color: #52525b;
+}
+.dark .prose-blog blockquote {
+  border-left-color: #818cf8;
+  background-color: rgba(255, 255, 255, 0.04);
+  color: #a1a1aa;
+}
+
+.prose-blog code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85em;
+  background-color: rgba(15, 23, 42, 0.06);
+  color: #18181b;
+  padding: 0.15rem 0.38rem;
+  border-radius: 0.35rem;
+}
+.dark .prose-blog code {
+  background-color: rgba(255, 255, 255, 0.09);
+  color: #e4e4e7;
+}
+
+.prose-blog pre {
+  margin: 1rem 0;
+  padding: 0.95rem 1.05rem;
+  background-color: rgba(15, 23, 42, 0.92);
+  color: #e4e4e7;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.prose-blog pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+.prose-blog a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.dark .prose-blog a {
+  color: #60a5fa;
+}
+
+.prose-blog hr {
+  border: none;
+  border-top: 1px solid rgba(161, 161, 170, 0.25);
+  margin: 1.5rem 0;
+}
+.dark .prose-blog hr {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.prose-blog table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+.prose-blog th,
+.prose-blog td {
+  border: 1px solid rgba(161, 161, 170, 0.28);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.dark .prose-blog th,
+.dark .prose-blog td {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.prose-blog th {
+  background-color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+}
+.dark .prose-blog th {
+  background-color: rgba(255, 255, 255, 0.05);
+}

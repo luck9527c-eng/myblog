@@ -1,0 +1,89 @@
+# 生产编排：blog-web（Nginx + 前端静态资源） + blog-backend（FastAPI）
+#
+# 部署目录约定（服务器）：
+#   /opt/blog-gemini/
+#   ├── app/                 ← 本仓库文件（backend/ src/ deploy/ package.json ...）
+#   └── app/deploy/.env      ← 真实密钥（chmod 600，不提交），由 .env.example 复制而来
+#
+# 启动：
+#   cd /opt/blog-gemini/app/deploy
+#   docker compose up -d --build
+#
+# 说明：
+#   - 宿主机 80/8002/3306 已被占用，本编排只用 8005。
+#   - 后端不发布宿主机端口，仅通过 blog-internal 网络被 Nginx 访问。
+#   - 后端加入外部网络 1panel-network，用容器名 chao_mysql:3306 内网连 MySQL。
+
+name: blog-gemini
+
+services:
+  blog-backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    image: blog-gemini-backend:local
+    container_name: blog-backend
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      DATABASE_URL: ${DATABASE_URL:?必须在 deploy/.env 中设置 DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET:?必须在 deploy/.env 中设置 JWT_SECRET}
+      ADMIN_INIT_PASSWORD: ${ADMIN_INIT_PASSWORD:?必须在 deploy/.env 中设置 ADMIN_INIT_PASSWORD}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-168}
+      UVICORN_WORKERS: ${UVICORN_WORKERS:-2}
+    networks:
+      - blog-internal
+      - 1panel-network
+    expose:
+      - "8000"
+    mem_limit: 384m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).status==200 else 1)"
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+
+  blog-web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+    image: blog-gemini-web:local
+    container_name: blog-web
+    restart: unless-stopped
+    depends_on:
+      blog-backend:
+        condition: service_healthy
+    ports:
+      - "8005:80"
+    networks:
+      - blog-internal
+    mem_limit: 128m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  blog-internal:
+    driver: bridge
+  1panel-network:
+    external: true
+    name: 1panel-network

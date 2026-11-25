@@ -1,0 +1,16 @@
+# 前端构建镜像（deploy/Dockerfile.web）的构建上下文排除项
+node_modules
+dist
+.git
+.gitignore
+*.log
+*.tsbuildinfo
+
+# 后端与文档不参与前端镜像构建，减小上下文体积
+backend
+docs
+
+# 任何真实密钥
+.env
+deploy/.env
+*.pem

@@ -1,0 +1,32 @@
+# ============================================================================
+# blog-gemini 后端依赖（版本全部固定，禁止使用未固定版本）
+# 目标运行时：Docker python:3.12-slim（无编译器 / 无 build-essential）
+# 说明：
+#   * 数据库驱动使用 aiomysql（纯 Python，依赖 PyMySQL），不使用 asyncmy，
+#     因为 python:3.12-slim 镜像内没有编译工具链，asyncmy 需要现场编译。
+#   * uvicorn 不装 [standard] extra，保持纯 Python 依赖，避免额外编译风险。
+#   * bcrypt / pydantic-core / SQLAlchemy 均为 manylinux wheel，无需编译。
+# ============================================================================
+
+# ---------- Web 框架 ----------
+fastapi==0.115.6
+uvicorn==0.34.0
+
+# ---------- 数据库 / ORM / 迁移 ----------
+SQLAlchemy==2.0.36
+aiomysql==0.2.0
+PyMySQL==1.1.1
+alembic==1.14.0
+
+# ---------- 配置与校验 ----------
+pydantic==2.10.4
+pydantic-settings==2.7.0
+
+# ---------- 安全 ----------
+PyJWT==2.10.1
+bcrypt==4.2.1
+
+# ---------- 测试（pytest -q 一键执行；生产镜像会一并安装，体积影响可忽略）----------
+pytest==8.3.4
+pytest-asyncio==0.25.0
+httpx==0.28.1
