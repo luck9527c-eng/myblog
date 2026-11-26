@@ -685,7 +685,7 @@ export function App() {
       />
 
       {/* Desktop 3-Column Container */}
-      <div className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-5 pb-24 lg:py-8">
+      <div className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-5 pb-8 lg:pt-8 lg:pb-6">
         {/* 后端连接状态 / 降级提示（不白屏） */}
         {booting && (
           <div className="mb-4 glass-card rounded-2xl px-4 py-3 flex items-center gap-2.5 text-sm text-zinc-500 dark:text-zinc-400">
@@ -831,6 +831,26 @@ export function App() {
           )}
         </div>
       </div>
+
+      {/* Minimal Compliance Footer (Plan A) */}
+      <footer className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-2 pb-24 lg:pb-6 text-center text-xs text-zinc-600/90 dark:text-zinc-300/75">
+        <div className="inline-flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
+          <span>
+            © {new Date().getFullYear()} {settings.blogTitle || '个人博客'}
+          </span>
+          <span aria-hidden="true" className="text-zinc-400 dark:text-zinc-500">
+            ·
+          </span>
+          <a
+            href="https://beian.miit.gov.cn/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-zinc-900 dark:hover:text-white hover:underline underline-offset-4 transition-colors tabular-nums"
+          >
+            桂ICP备2026027602号-2
+          </a>
+        </div>
+      </footer>
 
       {/* Mobile Bottom Fixed Navigation */}
       <MobileBottomNav

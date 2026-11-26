@@ -406,7 +406,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                   imageUpload.isDraggingOver ? 'ring-2 ring-indigo-500 bg-indigo-500/5' : ''
                 }`}
               />
-              <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
+              <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 px-1">
                 <span>支持截图 Ctrl+V 粘贴或拖拽图片自动上传</span>
                 {imageUpload.uploading && (
                   <span className="text-indigo-500 font-medium">正在上传图片…</span>
@@ -495,7 +495,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                     <button
                       type="button"
                       onClick={() => openEditComposer(entry)}
-                      className="p-2 rounded-lg text-zinc-400 hover:text-zinc-800 hover:bg-white/70 dark:hover:text-zinc-100 dark:hover:bg-white/10"
+                      className="p-2 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-white/70 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-white/10"
                       title="编辑日记"
                     >
                       <Edit3 className="w-4 h-4" />
@@ -504,7 +504,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                       type="button"
                       onClick={() => handleDelete(entry.id)}
                       disabled={deletingId === entry.id}
-                      className="p-2 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-500/10 dark:hover:text-rose-400 disabled:opacity-60"
+                      className="p-2 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-rose-500/10 dark:text-zinc-400 dark:hover:text-rose-400 disabled:opacity-60"
                       title="删除日记"
                     >
                       <Trash2 className="w-4 h-4" />

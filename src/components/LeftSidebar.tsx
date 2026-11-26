@@ -83,7 +83,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                   </span>
                 )}
               </div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 truncate mt-0.5">
                 {settings.authorHandle}
               </p>
             </div>
@@ -95,11 +95,11 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
           <div className="mt-3.5 pt-3.5 border-t border-zinc-200/60 dark:border-white/15 space-y-2 text-xs text-zinc-600 dark:text-zinc-200/80">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 shrink-0 text-zinc-400 dark:text-zinc-300" />
+              <MapPin className="w-4 h-4 shrink-0 text-zinc-500 dark:text-zinc-300" />
               <span className="truncate">{settings.authorLocation}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 shrink-0 text-zinc-400 dark:text-zinc-300" />
+              <Mail className="w-4 h-4 shrink-0 text-zinc-500 dark:text-zinc-300" />
               <span className="truncate">{settings.authorEmail}</span>
             </div>
           </div>
@@ -107,7 +107,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
         {/* Public Navigation */}
         <nav className="glass-card rounded-2xl p-3 space-y-1" aria-label="主导航">
-          <p className="px-3 pt-1 pb-1.5 text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+          <p className="px-3 pt-1 pb-1.5 text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
             导航
           </p>
           <button
@@ -123,7 +123,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
               className={`text-xs tabular-nums ${
                 currentView === 'home' || currentView === 'article'
                   ? 'text-zinc-300 dark:text-zinc-600'
-                  : 'text-zinc-400 dark:text-zinc-500'
+                  : 'text-zinc-500 dark:text-zinc-400'
               }`}
             >
               {publishedCount}
@@ -176,7 +176,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                 className={`text-xs tabular-nums ${
                   currentView === 'diary'
                     ? 'text-zinc-300 dark:text-zinc-600'
-                    : 'text-zinc-400 dark:text-zinc-500'
+                    : 'text-zinc-500 dark:text-zinc-400'
                 }`}
               >
                 {diaryCount}
@@ -200,7 +200,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
       {/* Bottom Controls: Theme + Subtle Admin Entry */}
       <div className="glass-card rounded-2xl p-3 space-y-1.5 shrink-0">
         <div className="flex items-center justify-between px-2 py-1">
-          <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300 min-w-0">
+          <div className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-200 min-w-0">
             <BookOpen className="w-4 h-4 text-indigo-500 shrink-0" />
             <span className="truncate font-medium">{settings.blogTitle}</span>
           </div>
@@ -213,7 +213,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
               className={`p-2 rounded-lg transition-colors ${
                 rainEnabled
                   ? 'text-indigo-600 bg-indigo-500/15 dark:text-sky-400 dark:bg-sky-400/15'
-                  : 'text-zinc-400 hover:text-zinc-900 hover:bg-white/70 dark:text-zinc-500 dark:hover:text-zinc-100 dark:hover:bg-white/10'
+                  : 'text-zinc-600 hover:text-zinc-900 hover:bg-white/70 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-white/10'
               }`}
             >
               <CloudRain className="w-[18px] h-[18px]" />

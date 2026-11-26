@@ -1085,9 +1085,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </span>
                       )}
                       {cat && (
-                        <span className="text-zinc-500 dark:text-zinc-400">{cat.name}</span>
+                        <span className="text-zinc-600 dark:text-zinc-400">{cat.name}</span>
                       )}
-                      <span className="text-zinc-400 tabular-nums">
+                      <span className="text-zinc-500 dark:text-zinc-400 tabular-nums">
                         {formatDateTimeLabel(art.publishedAt)}
                       </span>
                     </div>
@@ -1101,7 +1101,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <button
                         type="button"
                         onClick={() => onPreviewArticle(art.id)}
-                        className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 dark:hover:text-zinc-100 dark:hover:bg-zinc-800"
+                        className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800"
                         title="前台查看"
                       >
                         <Eye className="w-4 h-4" />
@@ -1114,7 +1114,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       className={`p-1.5 rounded-lg disabled:opacity-60 ${
                         art.pinned
                           ? 'text-amber-600 bg-amber-50 dark:bg-amber-950/40'
-                          : 'text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                          : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800'
                       }`}
                       title="切换置顶"
                     >
@@ -1132,7 +1132,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       type="button"
                       onClick={() => handleDeleteArticleClick(art.id)}
                       disabled={busyArticleId === art.id}
-                      className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:text-rose-400 dark:hover:bg-rose-950/40 disabled:opacity-60"
+                      className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-rose-50 dark:text-zinc-400 dark:hover:text-rose-400 dark:hover:bg-rose-950/40 disabled:opacity-60"
                       title="删除"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1567,7 +1567,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   placeholder="上传图片，或粘贴 /uploads/... 与 https://... 图片地址（留空则显示昵称首字母）"
                   className="w-full px-3.5 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-900/60"
                 />
-                <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   支持点击上传、拖拽图片到此处、截图 Ctrl+V 粘贴，或填写外链图片 URL；修改后请点击「保存全部设置」。
                 </p>
               </div>
@@ -1660,7 +1660,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400">
                 「关于自己 / 个人简历」Markdown 内容
               </label>
-              <span className="text-xs text-zinc-400">
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">
                 {aboutImageUpload.uploading ? '正在上传图片…' : '支持粘贴 / 拖拽图片'}
               </span>
             </div>

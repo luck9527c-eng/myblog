@@ -253,7 +253,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
                 <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
                   {getYearMonthLabel(ym)}
                 </h2>
-                <span className="text-sm text-zinc-400 tabular-nums">{list.length} 篇</span>
+                <span className="text-sm text-zinc-500 dark:text-zinc-400 tabular-nums">{list.length} 篇</span>
               </div>
               <ul className="divide-y divide-zinc-200/50 dark:divide-white/10">
                 {list.map((art) => {
@@ -276,7 +276,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
                             {art.title}
                           </span>
                         </div>
-                        <span className="text-xs sm:text-sm text-zinc-400 tabular-nums shrink-0 pl-5 sm:pl-0">
+                        <span className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 tabular-nums shrink-0 pl-5 sm:pl-0">
                           {formatDateTimeLabel(art.publishedAt)}
                         </span>
                       </button>
@@ -379,11 +379,11 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
                   <span>{cat.name}</span>
                 </button>
               )}
-              <span className="inline-flex items-center gap-1.5 tabular-nums">
-                <Calendar className="w-4 h-4 text-zinc-400" />
+              <span className="inline-flex items-center gap-1.5 tabular-nums text-zinc-600 dark:text-zinc-300">
+                <Calendar className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
                 {formatDateTimeLabel(article.publishedAt)}
               </span>
-              <span className="inline-flex items-center gap-1.5 tabular-nums text-zinc-400 dark:text-zinc-500">
+              <span className="inline-flex items-center gap-1.5 tabular-nums text-zinc-500 dark:text-zinc-400">
                 <BookOpen className="w-3.5 h-3.5" />
                 约 {stats.minutes} 分钟读完 · {stats.wordCount.toLocaleString()} 字
               </span>
@@ -436,7 +436,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
               onClick={() => onOpenArticle(prevArticle.id)}
               className="glass-card-interactive rounded-2xl p-4.5 text-left"
             >
-              <span className="text-xs text-zinc-400 flex items-center gap-1">
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
                 <ChevronLeft className="w-4 h-4" />
                 上一篇
               </span>
@@ -454,7 +454,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
               onClick={() => onOpenArticle(nextArticle.id)}
               className="glass-card-interactive rounded-2xl p-4.5 text-right"
             >
-              <span className="text-xs text-zinc-400 inline-flex items-center gap-1 justify-end">
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 inline-flex items-center gap-1 justify-end">
                 下一篇
                 <ChevronRight className="w-4 h-4" />
               </span>
@@ -572,7 +572,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
                       <span>{cat.name}</span>
                     </span>
                   )}
-                  <span className="text-zinc-400 dark:text-white/35">·</span>
+                  <span className="text-zinc-500 dark:text-white/40">·</span>
                   <time className="tabular-nums">{formatDateTimeLabel(art.publishedAt)}</time>
                 </div>
 
@@ -618,7 +618,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
           >
             {feedLoadingMore ? '正在加载更多…' : '加载更多文章'}
           </button>
-          <span className="text-xs text-zinc-400 tabular-nums">
+          <span className="text-xs text-zinc-600 dark:text-zinc-400 tabular-nums">
             已显示 {visibleArticles.length} / {total} 篇
           </span>
         </div>
