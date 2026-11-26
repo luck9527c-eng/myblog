@@ -14,6 +14,7 @@ import { getErrorMessage } from '../api/client';
 import type { DiaryDraft, DiaryEntry, Mood } from '../types';
 import { getNowTimeStr, getTodayDateStr } from '../utils/date';
 import { DAILY_REPORT_TEMPLATE, renderMarkdown } from '../utils/markdown';
+import { useMarkdownImageUpload } from '../utils/useMarkdownImageUpload';
 import { ConfirmModal } from './ConfirmModal';
 import { MarkdownBody } from './MarkdownBody';
 
@@ -147,6 +148,12 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
       prev.trim() ? `${prev.trim()}\n\n${DAILY_REPORT_TEMPLATE}` : DAILY_REPORT_TEMPLATE,
     );
   };
+
+  const imageUpload = useMarkdownImageUpload({
+    value: content,
+    onChange: setContent,
+    onError: setError,
+  });
 
   const submitSave = useCallback(async () => {
     if (!content.trim() || saving) return;
@@ -282,7 +289,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
 
       {/* Inline Quick Composer */}
       {isComposing && (
-        <form onSubmit={handleSave} className="glass-card rounded-2xl p-6 space-y-4">
+        <form onSubmit={handleSave} className="glass-card-reading rounded-2xl p-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
@@ -388,13 +395,24 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
               <MarkdownBody html={renderMarkdown(content)} />
             </div>
           ) : (
-            <textarea
-              rows={8}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="写下今天的完成事项、遇到的问题、明日计划或自由随笔（支持 Markdown）..."
-              className="w-full px-3.5 py-2.5 text-sm font-mono leading-relaxed rounded-xl border border-zinc-200/80 dark:border-white/10 bg-white/70 dark:bg-white/5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/25"
-            />
+            <div className="space-y-1.5">
+              <textarea
+                rows={8}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                {...imageUpload.textareaProps}
+                placeholder="写下今天的完成事项、遇到的问题、明日计划或自由随笔（支持 Markdown、截图 Ctrl+V 粘贴或拖拽图片）..."
+                className={`w-full px-3.5 py-2.5 text-sm font-mono leading-relaxed rounded-xl border border-zinc-200/80 dark:border-white/10 bg-white/70 dark:bg-white/5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 transition ${
+                  imageUpload.isDraggingOver ? 'ring-2 ring-indigo-500 bg-indigo-500/5' : ''
+                }`}
+              />
+              <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
+                <span>支持截图 Ctrl+V 粘贴或拖拽图片自动上传</span>
+                {imageUpload.uploading && (
+                  <span className="text-indigo-500 font-medium">正在上传图片…</span>
+                )}
+              </div>
+            </div>
           )}
 
           <div className="flex items-center justify-end gap-2">
@@ -453,7 +471,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
           {sortedAndFiltered.map((entry) => {
             const moodMeta = MOOD_OPTIONS.find((m) => m.value === entry.mood) || MOOD_OPTIONS[0];
             return (
-              <article key={entry.id} className="glass-card rounded-2xl p-6">
+              <article key={entry.id} className="glass-card-reading rounded-2xl p-6">
                 <div className="flex items-start justify-between gap-3 pb-3.5 mb-3.5 border-b border-zinc-200/60 dark:border-white/10">
                   <div>
                     <div className="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">

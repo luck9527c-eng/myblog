@@ -208,10 +208,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     onSelectTag(active ? null : tag);
                     onCloseMobileDrawer?.();
                   }}
-                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs transition-all ${
+                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all ${
                     active
-                      ? 'bg-zinc-900/90 text-white dark:bg-white/90 dark:text-zinc-900 font-medium shadow-xs'
-                      : 'bg-white/60 text-zinc-700 hover:bg-white/90 border border-white/70 dark:bg-white/5 dark:text-zinc-300 dark:border-white/10 dark:hover:bg-white/15'
+                      ? 'bg-zinc-900/90 text-white dark:bg-white dark:text-zinc-900 font-medium shadow-xs'
+                      : 'bg-white/70 text-zinc-800 hover:bg-white border border-white/80 dark:bg-white/15 dark:text-white dark:border-white/25 dark:hover:bg-white/25'
                   }`}
                 >
                   <span>#{tag}</span>
@@ -241,10 +241,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 }}
                 className="w-full text-left group block rounded-lg p-1.5 -mx-1.5 hover:bg-white/50 dark:hover:bg-white/5 transition-colors"
               >
-                <p className="text-sm font-medium text-zinc-700 group-hover:text-zinc-950 dark:text-zinc-300 dark:group-hover:text-white line-clamp-1 transition-colors">
+                <p className="text-sm font-medium text-zinc-700 group-hover:text-zinc-950 dark:text-zinc-100 dark:group-hover:text-white line-clamp-1 transition-colors">
                   {art.title}
                 </p>
-                <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 tabular-nums">
+                <p className="text-xs text-zinc-500 dark:text-zinc-200/70 mt-0.5 tabular-nums">
                   {formatDateOnly(art.publishedAt)}
                 </p>
               </button>

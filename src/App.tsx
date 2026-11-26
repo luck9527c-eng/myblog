@@ -658,12 +658,13 @@ export function App() {
 
   return (
     <div className="relative min-h-[var(--app-vh)] flex flex-col">
-      {/* Ambient Mesh Gradient Backdrop for Frosted Glass Refraction */}
+      {/* Vivid Color Blobs Backdrop for High-Translucency Glassmorphism */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden="true">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-indigo-50/70 to-sky-100/80 dark:from-[#07090f] dark:via-[#0b1020] dark:to-[#0d0b1a]" />
-        <div className="absolute -top-32 -left-24 w-[480px] h-[480px] rounded-full bg-indigo-300/35 dark:bg-indigo-600/20 blur-[110px]" />
-        <div className="absolute top-1/4 -right-24 w-[440px] h-[440px] rounded-full bg-sky-300/35 dark:bg-cyan-500/15 blur-[110px]" />
-        <div className="absolute -bottom-32 left-1/3 w-[520px] h-[520px] rounded-full bg-rose-200/35 dark:bg-purple-600/15 blur-[120px]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#e7eef8] via-[#edf3fc] to-[#e2eefb] dark:from-[#0b1122] dark:via-[#111a33] dark:to-[#0c1326]" />
+        <div className="absolute -top-24 -left-16 w-[430px] h-[430px] rounded-full bg-gradient-to-br from-indigo-400/55 via-violet-400/45 to-sky-300/35 dark:from-[#6d5dfc]/80 dark:via-[#7c3aed]/70 dark:to-[#4f46e5]/60 blur-[40px]" />
+        <div className="absolute top-[24%] right-[3%] w-[440px] h-[440px] rounded-full bg-gradient-to-tl from-cyan-400/50 via-sky-400/40 to-indigo-300/30 dark:from-[#22d3ee]/72 dark:via-[#06b6d4]/62 dark:to-[#0284c7]/55 blur-[42px]" />
+        <div className="absolute -bottom-24 left-[34%] w-[400px] h-[400px] rounded-full bg-gradient-to-tr from-rose-400/45 via-pink-300/35 to-amber-200/30 dark:from-[#fb7185]/65 dark:via-[#f43f5e]/55 dark:to-[#ec4899]/45 blur-[44px]" />
+        <div className="absolute top-[56%] left-[16%] w-[300px] h-[300px] rounded-full bg-sky-300/35 dark:bg-[#38bdf8]/28 blur-[56px]" />
       </div>
 
       {/* Lazy-Loaded Three.js 3D Depth Rain + Bokeh Ambience */}

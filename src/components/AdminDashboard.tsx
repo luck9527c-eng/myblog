@@ -38,6 +38,7 @@ import {
   isFutureDateTime,
 } from '../utils/date';
 import { DAILY_REPORT_TEMPLATE, renderMarkdown } from '../utils/markdown';
+import { useMarkdownImageUpload } from '../utils/useMarkdownImageUpload';
 import { ConfirmModal } from './ConfirmModal';
 import { MarkdownBody } from './MarkdownBody';
 
@@ -156,7 +157,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setSettingsForm(data.settings);
   }, [data.settings]);
 
-  const showToast = (msg: string) => {
+  const showToast = useCallback((msg: string) => {
     if (toastTimer.current !== null) {
       window.clearTimeout(toastTimer.current);
     }
@@ -165,7 +166,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       toastTimer.current = null;
       setToast(null);
     }, 2600);
-  };
+  }, []);
+
+  const articleImageUpload = useMarkdownImageUpload({
+    value: artContent,
+    onChange: setArtContent,
+    onError: showToast,
+  });
+
+  const diaryImageUpload = useMarkdownImageUpload({
+    value: editingDiary?.content ?? '',
+    onChange: (next) =>
+      setEditingDiary((prev) => (prev ? { ...prev, content: next } : prev)),
+    onError: showToast,
+  });
+
+  const aboutImageUpload = useMarkdownImageUpload({
+    value: settingsForm.aboutContent,
+    onChange: (next) => setSettingsForm((prev) => ({ ...prev, aboutContent: next })),
+    onError: showToast,
+  });
 
   useEffect(
     () => () => {
@@ -659,6 +679,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   if (activeTab === 'articles' && isEditingArticle) {
     return (
       <form onSubmit={handleSaveArticleSubmit} className="space-y-4">
+        {toast && (
+          <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-medium shadow-lg">
+            <Check className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600" />
+            <span>{toast}</span>
+          </div>
+        )}
         <ConfirmModal
           isOpen={confirmAction !== null}
           title="放弃未保存的文章？"
@@ -740,7 +766,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         {/* Metadata Panel (including Custom Publish Time) */}
-        <div className="glass-card rounded-2xl p-5 space-y-4 shadow-2xs">
+        <div className="glass-card-reading rounded-2xl p-5 space-y-4 shadow-2xs">
           <div>
             <input
               type="text"
@@ -825,7 +851,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         {/* Dual-Pane Markdown Editor + Live Preview */}
-        <div className="glass-card rounded-2xl overflow-hidden shadow-2xs">
+        <div className="glass-card-reading rounded-2xl overflow-hidden shadow-2xs">
           {/* Mobile Tab Switcher */}
           <div className="flex md:hidden border-b border-zinc-200 dark:border-zinc-800">
             <button
@@ -861,14 +887,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               }`}
             >
               <div className="hidden md:flex items-center justify-between px-4 py-2 border-b border-zinc-100 dark:border-zinc-800 text-[11px] font-medium text-zinc-400">
-                <span>MARKDOWN 源码</span>
-                <span>支持 GFM 语法</span>
+                <span>MARKDOWN 源码 · 支持 Ctrl+V 粘贴 / 拖拽图片</span>
+                <span>
+                  {articleImageUpload.uploading ? '正在上传图片…' : '支持 GFM 语法'}
+                </span>
               </div>
               <textarea
                 value={artContent}
                 onChange={(e) => setArtContent(e.target.value)}
-                placeholder="# 开始写作...&#10;&#10;支持标题、列表、代码块、引用和表格。"
-                className="flex-1 w-full p-4 text-sm font-mono leading-relaxed bg-transparent text-zinc-900 dark:text-zinc-100 resize-none focus:outline-none min-h-[420px]"
+                {...articleImageUpload.textareaProps}
+                placeholder="# 开始写作...&#10;&#10;支持标题、列表、代码块、引用、表格，以及截图 Ctrl+V 粘贴或拖拽图片。"
+                className={`flex-1 w-full p-4 text-sm font-mono leading-relaxed bg-transparent text-zinc-900 dark:text-zinc-100 resize-none focus:outline-none min-h-[420px] transition-colors ${
+                  articleImageUpload.isDraggingOver ? 'bg-indigo-500/10 ring-2 ring-inset ring-indigo-500/60' : ''
+                }`}
               />
             </div>
 
@@ -1176,12 +1207,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 />
               </div>
 
-              <textarea
-                rows={7}
-                value={editingDiary.content}
-                onChange={(e) => setEditingDiary({ ...editingDiary, content: e.target.value })}
-                className="w-full p-3 text-xs font-mono rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800"
-              />
+              <div className="space-y-1">
+                <textarea
+                  rows={7}
+                  value={editingDiary.content}
+                  onChange={(e) => setEditingDiary({ ...editingDiary, content: e.target.value })}
+                  {...diaryImageUpload.textareaProps}
+                  placeholder="支持 Markdown、截图 Ctrl+V 粘贴或拖拽图片..."
+                  className={`w-full p-3 text-xs font-mono rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 ${
+                    diaryImageUpload.isDraggingOver ? 'ring-2 ring-indigo-500' : ''
+                  }`}
+                />
+                <div className="flex items-center justify-between text-[11px] text-zinc-400 px-1">
+                  <span>支持截图 Ctrl+V 粘贴或拖拽图片自动上传</span>
+                  {diaryImageUpload.uploading && (
+                    <span className="text-indigo-500 font-medium">正在上传图片…</span>
+                  )}
+                </div>
+              </div>
 
               <div className="flex justify-end gap-2">
                 <button
@@ -1267,7 +1310,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {activeTab === 'taxonomy' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Categories */}
-          <section className="glass-card rounded-2xl p-5 space-y-4">
+          <section className="glass-card-reading rounded-2xl p-5 space-y-4">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
               <FolderPlus className="w-4 h-4 text-zinc-400" />
               <span>分类管理</span>
@@ -1346,7 +1389,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </section>
 
           {/* Tags */}
-          <section className="glass-card rounded-2xl p-5 space-y-4">
+          <section className="glass-card-reading rounded-2xl p-5 space-y-4">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
               <Tag className="w-4 h-4 text-zinc-400" />
               <span>标签总览</span>
@@ -1417,7 +1460,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="space-y-4">
           <form
             onSubmit={handleSettingsSubmit}
-            className="glass-card rounded-2xl p-5 sm:p-6 space-y-4"
+            className="glass-card-reading rounded-2xl p-5 sm:p-6 space-y-4"
           >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -1501,14 +1544,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
-              「关于自己 / 个人简历」Markdown 内容
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                「关于自己 / 个人简历」Markdown 内容
+              </label>
+              <span className="text-xs text-zinc-400">
+                {aboutImageUpload.uploading ? '正在上传图片…' : '支持粘贴 / 拖拽图片'}
+              </span>
+            </div>
             <textarea
               rows={8}
               value={settingsForm.aboutContent}
               onChange={(e) => setSettingsForm({ ...settingsForm, aboutContent: e.target.value })}
-              className="w-full px-3.5 py-2.5 text-sm font-mono rounded-xl border border-zinc-200/80 dark:border-white/10 bg-white/70 dark:bg-white/5"
+              {...aboutImageUpload.textareaProps}
+              className={`w-full px-3.5 py-2.5 text-sm font-mono rounded-xl border border-zinc-200/80 dark:border-white/10 bg-white/70 dark:bg-white/5 ${
+                aboutImageUpload.isDraggingOver ? 'ring-2 ring-indigo-500' : ''
+              }`}
             />
           </div>
 
@@ -1525,7 +1576,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </form>
 
           {/* 独立的管理员密码修改表单（需要原密码验证） */}
-          <form onSubmit={handlePasswordSubmit} className="glass-card rounded-2xl p-5 sm:p-6 space-y-4">
+          <form onSubmit={handlePasswordSubmit} className="glass-card-reading rounded-2xl p-5 sm:p-6 space-y-4">
             <div className="flex items-center gap-1.5">
               <KeyRound className="w-4 h-4 text-zinc-400" />
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">

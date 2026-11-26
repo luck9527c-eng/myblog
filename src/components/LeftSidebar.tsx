@@ -86,17 +86,17 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             </div>
           </div>
 
-          <p className="mt-3.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300/90">
+          <p className="mt-3.5 text-sm leading-relaxed text-zinc-700 dark:text-zinc-100/85">
             {settings.authorBio}
           </p>
 
-          <div className="mt-3.5 pt-3.5 border-t border-zinc-200/60 dark:border-white/10 space-y-2 text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="mt-3.5 pt-3.5 border-t border-zinc-200/60 dark:border-white/15 space-y-2 text-xs text-zinc-600 dark:text-zinc-200/80">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 shrink-0 text-zinc-400" />
+              <MapPin className="w-4 h-4 shrink-0 text-zinc-400 dark:text-zinc-300" />
               <span className="truncate">{settings.authorLocation}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 shrink-0 text-zinc-400" />
+              <Mail className="w-4 h-4 shrink-0 text-zinc-400 dark:text-zinc-300" />
               <span className="truncate">{settings.authorEmail}</span>
             </div>
           </div>
@@ -233,13 +233,13 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
               onCloseMobileDrawer?.();
               onOpenLogin();
             }}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm text-zinc-500 hover:text-zinc-900 hover:bg-white/60 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-white/10 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm text-zinc-600 hover:text-zinc-900 hover:bg-white/60 dark:text-zinc-200/85 dark:hover:text-white dark:hover:bg-white/15 transition-colors"
           >
             <span className="flex items-center gap-2">
               <LogIn className="w-4 h-4" />
               <span>管理员登录</span>
             </span>
-            <span className="text-xs opacity-75">访客模式</span>
+            <span className="text-xs opacity-80">访客模式</span>
           </button>
         ) : (
           <button

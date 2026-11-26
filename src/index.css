@@ -48,94 +48,119 @@
    透明度调法：改 background-color 的 alpha（越小越透）；顶光强度改渐变第一段的 alpha。 */
 @layer components {
   .glass-card {
-    background-color: rgba(255, 255, 255, 0.44);
-    /* 第一层细颗粒（哑光），第二层顶光渐变 */
+    background-color: rgba(255, 255, 255, 0.42);
     background-image: var(--glass-grain),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 100%);
-    backdrop-filter: blur(24px) saturate(175%) brightness(1.02);
-    -webkit-backdrop-filter: blur(24px) saturate(175%) brightness(1.02);
-    border: 1px solid rgba(255, 255, 255, 0.9);
+      linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.04) 100%);
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.84);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.96),
+      inset 1px 0 0 rgba(255, 255, 255, 0.55),
       inset 0 -1px 0 rgba(15, 23, 42, 0.04),
-      /* 接触影：只有 2px，紧贴边缘，不向外铺开 */
-      0 1px 2px rgba(15, 23, 42, 0.05),
-      /* 环境影：负扩散 -16px 收在卡片下方，且是蓝调而非中性灰 */
-      0 12px 30px -16px rgba(37, 99, 235, 0.22);
+      0 12px 32px -12px rgba(30, 58, 138, 0.18);
   }
 
   .dark .glass-card {
-    background-color: rgba(20, 25, 37, 0.42);
+    background-color: rgba(255, 255, 255, 0.12);
     background-image: var(--glass-grain-dark),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+      linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.02) 55%, rgba(10, 15, 32, 0.2) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.24);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.4),
-      0 1px 2px rgba(0, 0, 0, 0.35),
-      0 14px 34px -18px rgba(56, 189, 248, 0.16);
+      inset 0 1px 0 rgba(255, 255, 255, 0.36),
+      inset 1px 0 0 rgba(255, 255, 255, 0.14),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+      0 16px 38px -12px rgba(2, 6, 23, 0.55);
   }
 
   .glass-card-interactive {
-    background-color: rgba(255, 255, 255, 0.46);
+    background-color: rgba(255, 255, 255, 0.44);
     background-image: var(--glass-grain),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 100%);
-    backdrop-filter: blur(24px) saturate(175%) brightness(1.02);
-    -webkit-backdrop-filter: blur(24px) saturate(175%) brightness(1.02);
-    border: 1px solid rgba(255, 255, 255, 0.92);
+      linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.04) 100%);
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.86);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 1),
-      inset 0 -1px 0 rgba(15, 23, 42, 0.03),
-      0 1px 2px rgba(15, 23, 42, 0.05),
-      0 12px 30px -16px rgba(37, 99, 235, 0.2);
+      inset 0 1px 0 rgba(255, 255, 255, 0.96),
+      inset 1px 0 0 rgba(255, 255, 255, 0.55),
+      inset 0 -1px 0 rgba(15, 23, 42, 0.04),
+      0 12px 32px -12px rgba(30, 58, 138, 0.18);
     transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease, border-color 0.22s ease;
   }
 
   .glass-card-interactive:hover {
-    background-color: rgba(255, 255, 255, 0.66);
+    background-color: rgba(255, 255, 255, 0.62);
     border-color: rgba(255, 255, 255, 1);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 1),
-      inset 0 -1px 0 rgba(15, 23, 42, 0.04),
-      0 2px 4px rgba(15, 23, 42, 0.07),
-      0 18px 40px -18px rgba(37, 99, 235, 0.28);
-    transform: translateY(-1px);
+      inset 1px 0 0 rgba(255, 255, 255, 0.7),
+      inset 0 -1px 0 rgba(15, 23, 42, 0.05),
+      0 18px 42px -14px rgba(30, 58, 138, 0.26);
+    transform: translateY(-2px);
   }
 
   .dark .glass-card-interactive {
-    background-color: rgba(20, 25, 37, 0.4);
+    background-color: rgba(255, 255, 255, 0.12);
     background-image: var(--glass-grain-dark),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+      linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.02) 55%, rgba(10, 15, 32, 0.2) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.24);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.38),
-      0 1px 2px rgba(0, 0, 0, 0.32),
-      0 14px 34px -18px rgba(56, 189, 248, 0.14);
+      inset 0 1px 0 rgba(255, 255, 255, 0.36),
+      inset 1px 0 0 rgba(255, 255, 255, 0.14),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+      0 16px 38px -12px rgba(2, 6, 23, 0.55);
   }
 
   .dark .glass-card-interactive:hover {
-    background-color: rgba(34, 40, 57, 0.6);
-    border-color: rgba(255, 255, 255, 0.16);
+    background-color: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.38);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.12),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.45),
-      0 2px 6px rgba(0, 0, 0, 0.4),
-      0 20px 44px -20px rgba(56, 189, 248, 0.2);
+      inset 0 1px 0 rgba(255, 255, 255, 0.52),
+      inset 1px 0 0 rgba(255, 255, 255, 0.22),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+      0 22px 48px -14px rgba(2, 6, 23, 0.68);
+    transform: translateY(-2px);
+  }
+
+  /* 正文阅读 / 编辑器 / 弹窗用更稳的高可读磨砂玻璃（降低背后色球对长文字的干扰） */
+  .glass-card-reading {
+    background-color: rgba(255, 255, 255, 0.68);
+    background-image: var(--glass-grain),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 100%);
+    backdrop-filter: blur(22px) saturate(165%);
+    -webkit-backdrop-filter: blur(22px) saturate(165%);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 1),
+      0 14px 36px -14px rgba(15, 23, 42, 0.14);
+  }
+
+  .dark .glass-card-reading {
+    background-color: rgba(15, 23, 42, 0.62);
+    background-image: var(--glass-grain-dark),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 18px 44px -14px rgba(2, 6, 23, 0.65);
   }
 
   .glass-input {
-    background-color: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(20px) saturate(170%);
-    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    background-color: rgba(255, 255, 255, 0.48);
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.85);
-    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 6px 20px -6px rgba(15, 23, 42, 0.08);
   }
 
   .dark .glass-input {
-    background-color: rgba(20, 24, 36, 0.44);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+    background-color: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      0 8px 24px -8px rgba(2, 6, 23, 0.45);
   }
 }
 
@@ -349,4 +374,18 @@
 }
 .dark .prose-blog th {
   background-color: rgba(255, 255, 255, 0.05);
+}
+
+.prose-blog img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem auto;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(161, 161, 170, 0.22);
+  box-shadow: 0 8px 24px -10px rgba(15, 23, 42, 0.18);
+}
+.dark .prose-blog img {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 28px -10px rgba(0, 0, 0, 0.55);
 }

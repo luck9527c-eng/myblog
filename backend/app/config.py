@@ -8,10 +8,13 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_BACKEND_DIR = Path(__file__).resolve().parents[1]
 
 
 class Settings(BaseSettings):
@@ -50,6 +53,10 @@ class Settings(BaseSettings):
     db_use_null_pool: bool = False
     # 容器内 uvicorn worker 数（由 entrypoint.sh 读取）
     uvicorn_workers: int = 2
+    # 图片上传本地保存目录（相对路径基于 backend/ 解析；生产容器传 /data/uploads）
+    upload_dir: str = "uploads"
+    # 单张上传图片体积上限（MB），建议与 nginx client_max_body_size 保持一致
+    max_upload_size_mb: int = 8
     log_level: str = "INFO"
 
     @field_validator("database_url")
@@ -88,6 +95,23 @@ class Settings(BaseSettings):
         if hours <= 0:
             raise ValueError("SESSION_TTL_HOURS 必须大于 0")
         return hours
+
+    @field_validator("max_upload_size_mb")
+    @classmethod
+    def _validate_upload_mb(cls, value: int) -> int:
+        mb = int(value)
+        if not 1 <= mb <= 50:
+            raise ValueError("MAX_UPLOAD_SIZE_MB 需在 1-50 之间")
+        return mb
+
+    @property
+    def upload_path(self) -> Path:
+        raw = Path((self.upload_dir or "uploads").strip())
+        return raw if raw.is_absolute() else (_BACKEND_DIR / raw)
+
+    @property
+    def max_upload_bytes(self) -> int:
+        return int(self.max_upload_size_mb) * 1024 * 1024
 
     @property
     def cors_origins(self) -> list[str]:

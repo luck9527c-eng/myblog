@@ -29,7 +29,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       aria-label={title}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/45 backdrop-blur-md"
     >
-      <div className="glass-card w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4">
+      <div className="glass-card-reading w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 shrink-0 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">

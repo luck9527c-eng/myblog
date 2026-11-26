@@ -42,7 +42,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSubmi
       aria-label="管理员身份验证"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-md"
     >
-      <div className="glass-card w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+      <div className="glass-card-reading w-full max-w-sm rounded-2xl p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center">

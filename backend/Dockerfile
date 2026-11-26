@@ -39,9 +39,10 @@ COPY entrypoint.sh ./
 # 兼容 Windows 检出可能带入的 CRLF，并赋可执行权限
 RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
 
-# 非 root 用户运行
+# 非 root 用户运行（预建 /data/uploads 供 Docker 命名卷继承写权限）
 RUN useradd --system --uid 10001 --create-home --shell /usr/sbin/nologin appuser \
-    && chown -R appuser:appuser /app
+    && mkdir -p /data/uploads \
+    && chown -R appuser:appuser /app /data/uploads
 USER appuser
 
 EXPOSE 8000

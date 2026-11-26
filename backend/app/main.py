@@ -10,13 +10,14 @@
 from __future__ import annotations
 
 import logging
+import mimetypes
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy import text
 
 from . import database
@@ -34,6 +35,7 @@ logger = logging.getLogger("blog.main")
 
 @asynccontextmanager
 async def lifespan(application: FastAPI) -> AsyncIterator[None]:
+    get_settings().upload_path.mkdir(parents=True, exist_ok=True)
     logger.info("blog backend starting, config=%s", settings_summary(settings))
     yield
     await database.engine.dispose()
@@ -74,6 +76,28 @@ async def health() -> JSONResponse:
         logger.exception("health check failed: database unavailable")
         return JSONResponse(status_code=503, content={"status": "error", "database": "down"})
     return JSONResponse(status_code=200, content={"status": "ok", "database": "up"})
+
+
+@app.get("/uploads/{file_path:path}", tags=["ops"], summary="开发期静态图片访问（生产由 Nginx 直出）")
+async def serve_uploaded_image(file_path: str) -> FileResponse:
+    upload_root = get_settings().upload_path.resolve()
+    try:
+        target = (upload_root / file_path).resolve()
+    except (OSError, ValueError):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文件不存在") from None
+
+    if not target.is_relative_to(upload_root) or not target.is_file():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文件不存在")
+
+    media_type, _ = mimetypes.guess_type(target.name)
+    return FileResponse(
+        path=target,
+        media_type=media_type or "application/octet-stream",
+        headers={
+            "Cache-Control": "public, max-age=2592000, immutable",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 
 @app.exception_handler(RequestValidationError)

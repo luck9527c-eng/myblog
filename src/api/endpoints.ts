@@ -21,6 +21,7 @@ import type {
   RenameTagResult,
   SiteSettings,
   SiteSettingsInput,
+  UploadedImage,
 } from '../types';
 
 type QueryValue = string | number | boolean | null | undefined;
@@ -203,4 +204,15 @@ export function updateSettings(input: SiteSettingsInput): Promise<SiteSettings> 
 
 export function changePassword(oldPassword: string, newPassword: string): Promise<{ ok: boolean }> {
   return request<{ ok: boolean }>('/api/admin/password', putBody({ oldPassword, newPassword }));
+}
+
+/* ----------------------------- 图片上传 ---------------------------- */
+
+export function uploadImage(file: File): Promise<UploadedImage> {
+  const form = new FormData();
+  form.append('file', file);
+  return request<UploadedImage>('/api/admin/uploads', {
+    method: 'POST',
+    body: form,
+  });
 }

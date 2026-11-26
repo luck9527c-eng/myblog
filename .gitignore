@@ -9,6 +9,10 @@ npm-debug.log*
 # 本地启动日志与调试截图
 .dev-logs/
 
+# 本地上传图片目录（开发期测试图片不入库）
+uploads/
+backend/uploads/
+
 # 环境变量与密钥（严禁提交）
 .env
 .env.*

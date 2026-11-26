@@ -11,6 +11,7 @@ export default defineConfig({
     proxy: {
       '/api': BACKEND_ORIGIN,
       '/health': BACKEND_ORIGIN,
+      '/uploads': BACKEND_ORIGIN,
     },
   },
 })

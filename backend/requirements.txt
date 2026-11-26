@@ -11,6 +11,7 @@
 # ---------- Web 框架 ----------
 fastapi==0.115.6
 uvicorn==0.34.0
+python-multipart==0.0.20
 
 # ---------- 数据库 / ORM / 迁移 ----------
 SQLAlchemy==2.0.36

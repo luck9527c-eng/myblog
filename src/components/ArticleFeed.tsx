@@ -143,7 +143,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
   // ABOUT ME / RESUME VIEW
   if (view === 'about') {
     return (
-      <article className="glass-card rounded-2xl p-6 sm:p-8 space-y-6" data-rain-ledge>
+      <article className="glass-card-reading rounded-2xl p-6 sm:p-8 space-y-6" data-rain-ledge>
         {/* Resume Header Card */}
         <header className="pb-6 border-b border-zinc-200/70 dark:border-white/10">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -351,7 +351,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
           )}
         </div>
 
-        <article className="glass-card rounded-2xl p-6 sm:p-8 lg:p-9" data-rain-ledge>
+        <article className="glass-card-reading rounded-2xl p-6 sm:p-8 lg:p-9" data-rain-ledge>
           <header className="pb-6 mb-6 border-b border-zinc-200/70 dark:border-white/10">
             <div className="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mb-3.5">
               {article.pinned && (
@@ -471,15 +471,15 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
       {/* Header Banner */}
       <div className="glass-card rounded-2xl px-6 py-5 flex flex-wrap items-center justify-between gap-3" data-rain-ledge>
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
             {settings.blogTitle}
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-sm text-zinc-600 dark:text-zinc-200/85 mt-1">
             {settings.blogSubtitle}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 px-3 py-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-white/60 dark:border-white/10">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-100 px-3.5 py-1.5 rounded-full bg-white/60 dark:bg-white/15 border border-white/75 dark:border-white/25">
           <span>共 {total} 篇文章</span>
         </div>
       </div>
@@ -547,9 +547,9 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
                 onClick={() => onOpenArticle(art.id)}
                 className="glass-card-interactive group cursor-pointer rounded-2xl p-5 sm:p-6"
               >
-                <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mb-2.5">
+                <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-200/85 mb-2.5">
                   {art.pinned && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-700 border border-amber-500/25 dark:text-amber-300 text-xs font-medium">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-800 border border-amber-500/35 dark:bg-amber-400/20 dark:text-amber-200 dark:border-amber-300/35 text-xs font-medium">
                       <Pin className="w-3.5 h-3.5" />
                       置顶
                     </span>
@@ -560,7 +560,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
                         e.stopPropagation();
                         onSelectCategory(cat.id);
                       }}
-                      className="inline-flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-200"
+                      className="inline-flex items-center gap-1.5 hover:text-zinc-950 dark:hover:text-white"
                     >
                       <span
                         className="w-2 h-2 rounded-full"
@@ -569,15 +569,15 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
                       <span>{cat.name}</span>
                     </span>
                   )}
-                  <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                  <span className="text-zinc-400 dark:text-white/35">·</span>
                   <time className="tabular-nums">{formatDateTimeLabel(art.publishedAt)}</time>
                 </div>
 
-                <h2 className="text-lg sm:text-[20px] font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug">
+                <h2 className="text-lg sm:text-[20px] font-semibold text-zinc-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-cyan-200 transition-colors leading-snug">
                   {art.title}
                 </h2>
 
-                <p className="mt-2 text-sm sm:text-[15px] leading-relaxed text-zinc-600 dark:text-zinc-300/85 line-clamp-2">
+                <p className="mt-2 text-sm sm:text-[15px] leading-relaxed text-zinc-700 dark:text-zinc-100/85 line-clamp-2">
                   {art.excerpt}
                 </p>
 
@@ -591,7 +591,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
                           e.stopPropagation();
                           onSelectTag(tag);
                         }}
-                        className="px-2.5 py-1 rounded-lg text-xs bg-white/60 text-zinc-700 border border-white/70 hover:bg-white dark:bg-white/5 dark:text-zinc-300 dark:border-white/10 dark:hover:bg-white/15 transition-colors"
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-white/70 text-zinc-800 border border-white/80 hover:bg-white dark:bg-white/15 dark:text-white dark:border-white/25 dark:hover:bg-white/25 transition-colors"
                       >
                         #{tag}
                       </button>

@@ -76,7 +76,8 @@ async function readBody(response: Response): Promise<unknown> {
 export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   const hasBody = init.body !== undefined && init.body !== null;
-  if (hasBody && !headers.has('Content-Type')) {
+  const isFormData = typeof FormData !== 'undefined' && init.body instanceof FormData;
+  if (hasBody && !isFormData && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
   if (!headers.has('Accept')) headers.set('Accept', 'application/json');

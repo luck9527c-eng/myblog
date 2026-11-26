@@ -176,6 +176,13 @@ export interface ListResult<T> {
   total: number;
 }
 
+export interface UploadedImage {
+  url: string;
+  filename: string;
+  size: number;
+  mimeType: string;
+}
+
 export type AppView = 'home' | 'article' | 'archive' | 'about' | 'diary' | 'admin';
 
 export type AdminTab = 'articles' | 'diaries' | 'taxonomy' | 'settings';

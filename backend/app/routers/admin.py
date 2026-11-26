@@ -11,11 +11,12 @@ from __future__ import annotations
 import json
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile, status
 from sqlalchemy import delete, func, or_, select, update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from ..config import get_settings
 from ..database import get_session
 from ..models import Article, Category, Diary, SiteSetting, Tag, article_tags
 from ..schemas import (
@@ -36,12 +37,14 @@ from ..schemas import (
     TagDeleteOut,
     TagRenameInput,
     TagRenameOut,
+    UploadImageOut,
     article_to_out,
     category_to_out,
     diary_to_out,
     settings_to_out,
 )
 from ..security import create_session_token, hash_password, require_admin, set_session_cookie, verify_password
+from ..storage import save_image
 from ..utils import (
     LIKE_ESCAPE,
     article_search_clause,
@@ -562,3 +565,40 @@ async def change_password(
     set_session_cookie(response, create_session_token(int(admin.token_version)))
     logger.info("admin password changed, token_version=%s", admin.token_version)
     return OkOut(ok=True)
+
+
+# ===========================================================================
+# 图片上传（仅管理员）
+# ===========================================================================
+@router.post("/uploads", response_model=UploadImageOut, summary="上传文章/日记图片（仅管理员）")
+async def upload_image(
+    file: UploadFile = File(...),
+    admin: SiteSetting = Depends(require_admin),
+) -> UploadImageOut:
+    app_settings = get_settings()
+    max_bytes = app_settings.max_upload_bytes
+    chunks: list[bytes] = []
+    total = 0
+    try:
+        while True:
+            chunk = await file.read(1024 * 64)
+            if not chunk:
+                break
+            total += len(chunk)
+            if total > max_bytes:
+                raise HTTPException(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    detail=f"图片大小不能超过 {app_settings.max_upload_size_mb} MB",
+                )
+            chunks.append(chunk)
+    finally:
+        await file.close()
+
+    saved = save_image(b"".join(chunks), app_settings.upload_path, max_bytes, now_local())
+    logger.info("uploaded image filename=%s size=%s", saved.filename, saved.size)
+    return UploadImageOut(
+        url=saved.url,
+        filename=saved.filename,
+        size=saved.size,
+        mime_type=saved.mime_type,
+    )

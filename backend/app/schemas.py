@@ -275,6 +275,13 @@ class SessionOut(CamelModel):
     is_admin: bool
 
 
+class UploadImageOut(CamelModel):
+    url: str
+    filename: str
+    size: int
+    mime_type: str
+
+
 class SiteSettingsOut(CamelModel):
     """站点设置（绝不含任何密码字段）。"""
 

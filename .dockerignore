@@ -9,6 +9,7 @@ dist
 # 后端与文档不参与前端镜像构建，减小上下文体积
 backend
 docs
+uploads
 
 # 任何真实密钥
 .env
