@@ -698,7 +698,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     `px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap ${
       activeTab === tab
         ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-2xs'
-        : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
+        : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800'
     }`;
 
   // SPLIT-PANE MARKDOWN EDITOR VIEW
@@ -737,7 +737,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   () => setIsEditingArticle(false),
                 )
               }
-              className="px-3 py-1.5 rounded-lg text-xs text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+              className="px-3 py-1.5 rounded-lg text-xs text-zinc-600 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
             >
               返回列表
             </button>
@@ -767,7 +767,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs border transition-colors ${
                 artPinned
                   ? 'bg-amber-50 border-amber-300 text-amber-800 dark:bg-amber-950/60 dark:border-amber-700 dark:text-amber-300'
-                  : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400'
+                  : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-200'
               }`}
             >
               <Pin className="w-3.5 h-3.5" />
@@ -984,7 +984,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <Settings className="w-5 h-5 text-zinc-500" />
               <span>管理后台</span>
             </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            <p className="text-sm text-zinc-500 dark:text-zinc-200 mt-1">
               内容管理、每日日报维护与站点配置（所有修改实时保存至数据库）
             </p>
           </div>
@@ -1074,7 +1074,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         className={`px-2 py-0.5 rounded font-medium ${
                           art.status === 'published'
                             ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
-                            : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
+                            : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-200'
                         }`}
                       >
                         {art.status === 'published' ? '已发布' : '草稿'}
@@ -1085,9 +1085,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </span>
                       )}
                       {cat && (
-                        <span className="text-zinc-600 dark:text-zinc-400">{cat.name}</span>
+                        <span className="text-zinc-600 dark:text-zinc-200">{cat.name}</span>
                       )}
-                      <span className="text-zinc-500 dark:text-zinc-400 tabular-nums">
+                      <span className="text-zinc-500 dark:text-zinc-200 tabular-nums">
                         {formatDateTimeLabel(art.publishedAt)}
                       </span>
                     </div>
@@ -1101,7 +1101,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <button
                         type="button"
                         onClick={() => onPreviewArticle(art.id)}
-                        className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800"
+                        className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:text-zinc-100 dark:hover:bg-zinc-800"
                         title="前台查看"
                       >
                         <Eye className="w-4 h-4" />
@@ -1114,7 +1114,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       className={`p-1.5 rounded-lg disabled:opacity-60 ${
                         art.pinned
                           ? 'text-amber-600 bg-amber-50 dark:bg-amber-950/40'
-                          : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800'
+                          : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:text-zinc-100 dark:hover:bg-zinc-800'
                       }`}
                       title="切换置顶"
                     >
@@ -1132,7 +1132,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       type="button"
                       onClick={() => handleDeleteArticleClick(art.id)}
                       disabled={busyArticleId === art.id}
-                      className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-rose-50 dark:text-zinc-400 dark:hover:text-rose-400 dark:hover:bg-rose-950/40 disabled:opacity-60"
+                      className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-rose-50 dark:text-zinc-200 dark:hover:text-rose-400 dark:hover:bg-rose-950/40 disabled:opacity-60"
                       title="删除"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1567,7 +1567,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   placeholder="上传图片，或粘贴 /uploads/... 与 https://... 图片地址（留空则显示昵称首字母）"
                   className="w-full px-3.5 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-900/60"
                 />
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-zinc-500 dark:text-zinc-200">
                   支持点击上传、拖拽图片到此处、截图 Ctrl+V 粘贴，或填写外链图片 URL；修改后请点击「保存全部设置」。
                 </p>
               </div>
@@ -1576,7 +1576,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-200 mb-1.5">
                 博客名称
               </label>
               <input
@@ -1587,7 +1587,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-200 mb-1.5">
                 副标题 / Slogan
               </label>
               <input
@@ -1598,7 +1598,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-200 mb-1.5">
                 博主昵称
               </label>
               <input
@@ -1609,7 +1609,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-200 mb-1.5">
                 个人主页 ID
               </label>
               <input
@@ -1620,7 +1620,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-200 mb-1.5">
                 所在城市
               </label>
               <input
@@ -1631,7 +1631,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-200 mb-1.5">
                 联系邮箱
               </label>
               <input
@@ -1644,7 +1644,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
+            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-200 mb-1.5">
               个人简介（左侧名片展示）
             </label>
             <textarea
@@ -1657,10 +1657,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-200">
                 「关于自己 / 个人简历」Markdown 内容
               </label>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs text-zinc-500 dark:text-zinc-200">
                 {aboutImageUpload.uploading ? '正在上传图片…' : '支持粘贴 / 拖拽图片'}
               </span>
             </div>
@@ -1695,13 +1695,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 修改管理员密码
               </h3>
             </div>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-200">
               需要输入当前密码校验；修改成功后其它已登录的旧会话会失效，当前浏览器保持登录。
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-200 mb-1">
                   当前密码
                 </label>
                 <input
@@ -1716,7 +1716,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-200 mb-1">
                   新密码（至少 6 位）
                 </label>
                 <input
@@ -1731,7 +1731,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-200 mb-1">
                   确认新密码
                 </label>
                 <input

@@ -59,7 +59,7 @@ interface ArticleFeedProps {
 
 const LoadingCard: React.FC<{ text?: string }> = ({ text = '正在加载…' }) => (
   <div className="glass-card rounded-2xl px-6 py-5 text-center">
-    <span className="inline-flex items-center gap-2.5 text-sm text-zinc-500 dark:text-zinc-400">
+    <span className="inline-flex items-center gap-2.5 text-sm text-zinc-500 dark:text-zinc-200">
       <span className="w-4 h-4 rounded-full border-2 border-zinc-300 border-t-transparent animate-spin dark:border-zinc-600 dark:border-t-transparent" />
       <span>{text}</span>
     </span>
@@ -182,7 +182,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
             )}
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs sm:text-sm text-zinc-500 dark:text-zinc-200">
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/60 dark:bg-white/5 border border-white/70 dark:border-white/10">
               <MapPin className="w-4 h-4 text-indigo-500" />
               {settings.authorLocation}
@@ -221,7 +221,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">时间归档</h1>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-sm text-zinc-500 dark:text-zinc-200 mt-1">
                 按文章设定的发布时间倒序排列（共 {archiveTotal} 篇）
               </p>
             </div>
@@ -253,7 +253,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
                 <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
                   {getYearMonthLabel(ym)}
                 </h2>
-                <span className="text-sm text-zinc-500 dark:text-zinc-400 tabular-nums">{list.length} 篇</span>
+                <span className="text-sm text-zinc-500 dark:text-zinc-200 tabular-nums">{list.length} 篇</span>
               </div>
               <ul className="divide-y divide-zinc-200/50 dark:divide-white/10">
                 {list.map((art) => {
@@ -276,7 +276,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
                             {art.title}
                           </span>
                         </div>
-                        <span className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 tabular-nums shrink-0 pl-5 sm:pl-0">
+                        <span className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-200 tabular-nums shrink-0 pl-5 sm:pl-0">
                           {formatDateTimeLabel(art.publishedAt)}
                         </span>
                       </button>
@@ -300,7 +300,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
     if (articleError || !article) {
       return (
         <div className="glass-card rounded-2xl p-8 text-center">
-          <p className="text-base text-zinc-500 dark:text-zinc-400">
+          <p className="text-base text-zinc-500 dark:text-zinc-200">
             {articleError || '文章不存在或已被删除'}
           </p>
           <button
@@ -356,7 +356,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
 
         <article className="glass-card-reading rounded-2xl p-6 sm:p-8 lg:p-9" data-rain-ledge>
           <header className="pb-6 mb-6 border-b border-zinc-200/70 dark:border-white/10">
-            <div className="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mb-3.5">
+            <div className="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm text-zinc-500 dark:text-zinc-200 mb-3.5">
               {article.pinned && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-amber-500/15 text-amber-700 border border-amber-500/25 dark:text-amber-300 text-xs font-medium">
                   <Pin className="w-3.5 h-3.5" />
@@ -380,10 +380,10 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
                 </button>
               )}
               <span className="inline-flex items-center gap-1.5 tabular-nums text-zinc-600 dark:text-zinc-300">
-                <Calendar className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                <Calendar className="w-4 h-4 text-zinc-500 dark:text-zinc-200" />
                 {formatDateTimeLabel(article.publishedAt)}
               </span>
-              <span className="inline-flex items-center gap-1.5 tabular-nums text-zinc-500 dark:text-zinc-400">
+              <span className="inline-flex items-center gap-1.5 tabular-nums text-zinc-500 dark:text-zinc-200">
                 <BookOpen className="w-3.5 h-3.5" />
                 约 {stats.minutes} 分钟读完 · {stats.wordCount.toLocaleString()} 字
               </span>
@@ -436,7 +436,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
               onClick={() => onOpenArticle(prevArticle.id)}
               className="glass-card-interactive rounded-2xl p-4.5 text-left"
             >
-              <span className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+              <span className="text-xs text-zinc-500 dark:text-zinc-200 flex items-center gap-1">
                 <ChevronLeft className="w-4 h-4" />
                 上一篇
               </span>
@@ -454,7 +454,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
               onClick={() => onOpenArticle(nextArticle.id)}
               className="glass-card-interactive rounded-2xl p-4.5 text-right"
             >
-              <span className="text-xs text-zinc-500 dark:text-zinc-400 inline-flex items-center gap-1 justify-end">
+              <span className="text-xs text-zinc-500 dark:text-zinc-200 inline-flex items-center gap-1 justify-end">
                 下一篇
                 <ChevronRight className="w-4 h-4" />
               </span>
@@ -490,7 +490,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
       {/* Active Filter Chips */}
       {hasFilters && (
         <div className="flex flex-wrap items-center gap-2 px-1">
-          <span className="text-sm text-zinc-500 dark:text-zinc-400">当前筛选：</span>
+          <span className="text-sm text-zinc-500 dark:text-zinc-200">当前筛选：</span>
           {selectedCategoryId && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-sm bg-zinc-900/90 text-white dark:bg-white/90 dark:text-zinc-900 shadow-xs">
               分类：{categoryMap.get(selectedCategoryId)?.name}
@@ -515,7 +515,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
           <button
             type="button"
             onClick={onClearAllFilters}
-            className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 underline ml-1"
+            className="text-sm text-zinc-500 hover:text-zinc-900 dark:text-zinc-200 dark:hover:text-white underline ml-1"
           >
             重置全部
           </button>
@@ -529,7 +529,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
         <LoadingCard text="正在加载文章…" />
       ) : visibleArticles.length === 0 ? (
         <div className="glass-card rounded-2xl p-12 text-center">
-          <p className="text-base text-zinc-500 dark:text-zinc-400">暂无符合条件的文章</p>
+          <p className="text-base text-zinc-500 dark:text-zinc-200">暂无符合条件的文章</p>
           {hasFilters && (
             <button
               type="button"
@@ -618,7 +618,7 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
           >
             {feedLoadingMore ? '正在加载更多…' : '加载更多文章'}
           </button>
-          <span className="text-xs text-zinc-600 dark:text-zinc-400 tabular-nums">
+          <span className="text-xs text-zinc-600 dark:text-zinc-200 tabular-nums">
             已显示 {visibleArticles.length} / {total} 篇
           </span>
         </div>

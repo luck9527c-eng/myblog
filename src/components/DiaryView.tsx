@@ -261,7 +261,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
               </span>
               <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">每日日记与日报</h1>
             </div>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1.5">
+            <p className="text-sm text-zinc-600 dark:text-zinc-200 mt-1.5">
               记录每日工作复盘、待办与随笔。新建时可自由修改日期以补写往期日报。
             </p>
           </div>
@@ -321,7 +321,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
               <button
                 type="button"
                 onClick={requestCloseComposer}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -406,7 +406,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                   imageUpload.isDraggingOver ? 'ring-2 ring-indigo-500 bg-indigo-500/5' : ''
                 }`}
               />
-              <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 px-1">
+              <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-200 px-1">
                 <span>支持截图 Ctrl+V 粘贴或拖拽图片自动上传</span>
                 {imageUpload.uploading && (
                   <span className="text-indigo-500 font-medium">正在上传图片…</span>
@@ -420,7 +420,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
               type="button"
               onClick={requestCloseComposer}
               disabled={saving}
-              className="px-4 py-2 rounded-xl text-sm text-zinc-600 hover:bg-white/60 dark:text-zinc-400 dark:hover:bg-white/10 disabled:opacity-60"
+              className="px-4 py-2 rounded-xl text-sm text-zinc-600 hover:bg-white/60 dark:text-zinc-200 dark:hover:bg-white/10 disabled:opacity-60"
             >
               取消
             </button>
@@ -464,7 +464,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
       {/* Diary Timeline */}
       {sortedAndFiltered.length === 0 ? (
         <div className="glass-card rounded-2xl p-10 text-center space-y-3">
-          <p className="text-base text-zinc-500 dark:text-zinc-400">暂无符合条件的日记</p>
+          <p className="text-base text-zinc-500 dark:text-zinc-200">暂无符合条件的日记</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -474,7 +474,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
               <article key={entry.id} className="glass-card-reading rounded-2xl p-6">
                 <div className="flex items-start justify-between gap-3 pb-3.5 mb-3.5 border-b border-zinc-200/60 dark:border-white/10">
                   <div>
-                    <div className="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
+                    <div className="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm text-zinc-500 dark:text-zinc-200">
                       <span className="font-semibold text-zinc-800 dark:text-zinc-200 tabular-nums">
                         {entry.date}
                       </span>
@@ -495,7 +495,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                     <button
                       type="button"
                       onClick={() => openEditComposer(entry)}
-                      className="p-2 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-white/70 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-white/10"
+                      className="p-2 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-white/70 dark:text-zinc-200 dark:hover:text-zinc-100 dark:hover:bg-white/10"
                       title="编辑日记"
                     >
                       <Edit3 className="w-4 h-4" />
@@ -504,7 +504,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                       type="button"
                       onClick={() => handleDelete(entry.id)}
                       disabled={deletingId === entry.id}
-                      className="p-2 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-rose-500/10 dark:text-zinc-400 dark:hover:text-rose-400 disabled:opacity-60"
+                      className="p-2 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-rose-500/10 dark:text-zinc-200 dark:hover:text-rose-400 disabled:opacity-60"
                       title="删除日记"
                     >
                       <Trash2 className="w-4 h-4" />

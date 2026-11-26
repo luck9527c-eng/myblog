@@ -78,7 +78,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     `flex-1 flex flex-col items-center justify-center py-2 text-xs font-medium transition-colors ${
       active
         ? 'text-indigo-600 dark:text-indigo-400'
-        : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
+        : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-200 dark:hover:text-white'
     }`;
 
   return (

@@ -74,19 +74,19 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
     <div className="space-y-4">
       {/* Search Box */}
       <div className="relative" data-rain-ledge>
-        <Search className="w-4 h-4 text-zinc-500 dark:text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
+        <Search className="w-4 h-4 text-zinc-500 dark:text-zinc-200 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={isDiaryMode ? '搜索日记标题、内容或标签...' : '搜索文章标题、内容或标签...'}
-          className="glass-input w-full pl-10 pr-9 py-2.5 text-sm rounded-2xl text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 transition"
+          className="glass-input w-full pl-10 pr-9 py-2.5 text-sm rounded-2xl text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 transition"
         />
         {searchQuery && (
           <button
             type="button"
             onClick={() => onSearchChange('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 z-10"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-800 dark:text-zinc-200 dark:hover:text-white z-10"
             aria-label="清除搜索"
           >
             <X className="w-4 h-4" />
@@ -113,7 +113,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     className={`w-full text-left text-sm py-1 pr-2 rounded-lg truncate transition-all border-l-2 ${
                       isActive
                         ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 font-medium'
-                        : 'border-transparent text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5'
+                        : 'border-transparent text-zinc-600 hover:text-zinc-950 dark:text-zinc-200 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5'
                     }`}
                   >
                     {h.text}
@@ -137,7 +137,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               <button
                 type="button"
                 onClick={() => onSelectCategory(null)}
-                className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-200 dark:hover:text-white"
               >
                 全部
               </button>
@@ -188,7 +188,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             <button
               type="button"
               onClick={() => onSelectTag(null)}
-              className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+              className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-200 dark:hover:text-white"
             >
               重置
             </button>
@@ -196,7 +196,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         </div>
         <div className="flex flex-wrap gap-2">
           {allTags.length === 0 ? (
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">暂无标签</span>
+            <span className="text-sm text-zinc-500 dark:text-zinc-200">暂无标签</span>
           ) : (
             allTags.map(([tag, count]) => {
               const active = selectedTag === tag;
@@ -244,7 +244,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 <p className="text-sm font-medium text-zinc-700 group-hover:text-zinc-950 dark:text-zinc-100 dark:group-hover:text-white line-clamp-1 transition-colors">
                   {art.title}
                 </p>
-                <p className="text-xs text-zinc-600 dark:text-zinc-300/80 mt-0.5 tabular-nums">
+                <p className="text-xs text-zinc-600 dark:text-zinc-200 mt-0.5 tabular-nums">
                   {formatDateOnly(art.publishedAt)}
                 </p>
               </button>
