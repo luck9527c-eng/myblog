@@ -39,7 +39,7 @@
   - 会话鉴权：签名 Token（`PyJWT` 或 `itsdangerous`）写入 `HttpOnly; SameSite=Lax` Cookie
 
 ### 2.2 数据库
-- **MySQL 8.0**（复用服务器现有 `chao_mysql` 容器实例，版本 `8.0.46`，字符集统一 `utf8mb4` / `utf8mb4_unicode_ci`，时区 `Asia/Shanghai`）。
+- **MySQL 8.0**（独立业务库 `personal_blog`，字符集统一 `utf8mb4` / `utf8mb4_unicode_ci`，时区 `Asia/Shanghai`）。
 
 ### 2.3 前端（复用本仓库现有原型）
 - **框架**：React 19 + TypeScript + Vite 6 + Tailwind CSS v4
@@ -48,22 +48,20 @@
 
 ---
 
-## 3. 服务器环境与部署约束
+## 3. 容器化部署与环境约束
 
-开发与打包时必须遵循目标腾讯云服务器的真实运行条件：
+开发与打包时遵循以下通用容器化部署约束：
 
-1. **主机环境**：Ubuntu 24.04 LTS，已安装 Docker Engine 27.5+ 与 Docker Compose v2，**宿主机未安装 Node.js**，因此前端构建应在本地或 Docker 多阶段构建（`node:22-alpine` 构建 `dist/`）中完成。
-2. **MySQL 连接方式**：
-   - 现有 `chao_mysql` 容器运行在 Docker 网络 `1panel-network` 中。
-   - 博客容器应加入外部网络 `1panel-network`（`external: true`），后端通过容器名 `chao_mysql:3306` 内网连接 MySQL，无需绕公网。
-   - **数据库隔离要求**：必须在 `chao_mysql` 中创建独立数据库 `personal_blog` 和独立最小权限账号 `blog_app`（仅授予 `personal_blog.*` 权限），**禁止读写其他业务库**。
-3. **端口避让**：
-   - 宿主机 `80`（`lhc-frontend`）、`8002`（`workbuddy2api-hub`）、`3306`（`chao_mysql`）已被占用；`8003`/`8004` 为历史业务保留端口。
-   - 建议博客服务绑定全新端口（如宿主机 `8005` -> 容器 `80`，或由统一反向代理转发），部署后需确认云安全组放行对应端口。
+1. **多阶段镜像构建**：前端构建在容器构建阶段（`node:22-alpine` 构建 `dist/`）完成，不依赖宿主机预先安装 Node.js。
+2. **MySQL 连接与隔离要求**：
+   - 后端通过 Docker 内网或独立数据库实例连接 MySQL 8.0。
+   - **数据库隔离要求**：创建独立数据库 `personal_blog` 和独立最小权限账号 `blog_app`（仅授予 `personal_blog.*` 权限），**禁止读写其他业务库**。
+3. **端口规划**：
+   - 前端 Nginx 容器默认对外映射独立端口（如 `8005` -> 容器 `80`），后端 FastAPI 仅监听容器内部 `8000` 端口由 Nginx 反向代理；生产环境可再由宿主机 Nginx / 反向代理接入 HTTPS。
 4. **国内镜像与依赖构建**：
-   - Dockerfile 中建议配置国内镜像加速（PyPI 使用 `https://mirrors.aliyun.com/pypi/simple/`，npm 使用 `https://registry.npmmirror.com`）。
+   - Dockerfile 中可配置镜像加速（如 PyPI 镜像、npm 镜像）。
 5. **敏感信息管理**：
-   - 所有数据库密码、JWT Secret、初始管理员密码均通过服务器本地 `.env` 注入，严禁硬编码在源码或镜像中。
+   - 所有数据库密码、JWT Secret、初始管理员密码均通过本地 `.env` 注入，严禁硬编码在源码或镜像中。
 
 ---
 
