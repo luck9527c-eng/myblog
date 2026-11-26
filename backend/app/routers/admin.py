@@ -68,6 +68,7 @@ _SETTINGS_FIELDS = (
     "blog_subtitle",
     "author_name",
     "author_handle",
+    "author_avatar",
     "author_bio",
     "author_location",
     "author_email",

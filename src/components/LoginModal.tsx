@@ -52,9 +52,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSubmi
               <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
                 管理员身份验证
               </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                解锁「每日日记」与「管理后台」
-              </p>
             </div>
           </div>
           <button

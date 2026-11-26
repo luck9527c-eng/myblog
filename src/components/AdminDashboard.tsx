@@ -10,14 +10,17 @@ import {
   NotebookPen,
   Pin,
   Plus,
+  RotateCcw,
   Save,
   Settings,
   Sparkles,
   Tag,
   Trash2,
+  Upload,
   X,
 } from 'lucide-react';
 import { getErrorMessage } from '../api/client';
+import { uploadImage } from '../api/endpoints';
 import type {
   AdminTab,
   Article,
@@ -39,6 +42,7 @@ import {
 } from '../utils/date';
 import { DAILY_REPORT_TEMPLATE, renderMarkdown } from '../utils/markdown';
 import { useMarkdownImageUpload } from '../utils/useMarkdownImageUpload';
+import { AuthorAvatar } from './AuthorAvatar';
 import { ConfirmModal } from './ConfirmModal';
 import { MarkdownBody } from './MarkdownBody';
 
@@ -139,6 +143,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Settings Form State
   const [settingsForm, setSettingsForm] = useState<Omit<SiteSettings, 'updatedAt'>>(data.settings);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarDragging, setAvatarDragging] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleAvatarUpload = useCallback(async (file: File) => {
+    if (file.type && !file.type.startsWith('image/')) {
+      showToast('请选择图片文件（PNG / JPG / WebP / GIF）');
+      return;
+    }
+    setAvatarUploading(true);
+    try {
+      const uploaded = await uploadImage(file);
+      setSettingsForm((prev) => ({ ...prev, authorAvatar: uploaded.url }));
+      showToast('头像已上传，请点击「保存全部设置」生效');
+    } catch (err) {
+      showToast(getErrorMessage(err, '头像上传失败'));
+    } finally {
+      setAvatarUploading(false);
+    }
+  }, []);
 
   // Unsaved-changes tracking & discard modal
   const articleSnapshotRef = useRef<string>('');
@@ -261,6 +285,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       settingsForm.blogSubtitle !== s.blogSubtitle ||
       settingsForm.authorName !== s.authorName ||
       settingsForm.authorHandle !== s.authorHandle ||
+      settingsForm.authorAvatar !== s.authorAvatar ||
       settingsForm.authorBio !== s.authorBio ||
       settingsForm.authorLocation !== s.authorLocation ||
       settingsForm.authorEmail !== s.authorEmail ||
@@ -568,6 +593,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       blogSubtitle: settingsForm.blogSubtitle,
       authorName: settingsForm.authorName,
       authorHandle: settingsForm.authorHandle,
+      authorAvatar: settingsForm.authorAvatar,
       authorBio: settingsForm.authorBio,
       authorLocation: settingsForm.authorLocation,
       authorEmail: settingsForm.authorEmail,
@@ -1462,6 +1488,92 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             onSubmit={handleSettingsSubmit}
             className="glass-card-reading rounded-2xl p-5 sm:p-6 space-y-4"
           >
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setAvatarDragging(true);
+            }}
+            onDragLeave={() => setAvatarDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setAvatarDragging(false);
+              const file = e.dataTransfer.files?.[0];
+              if (file) void handleAvatarUpload(file);
+            }}
+            className={`rounded-xl border p-4 transition-colors ${
+              avatarDragging
+                ? 'border-indigo-500 bg-indigo-500/10'
+                : 'border-zinc-200/80 dark:border-zinc-700/80 bg-zinc-50/70 dark:bg-zinc-800/40'
+            }`}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <AuthorAvatar
+                avatarUrl={settingsForm.authorAvatar}
+                authorName={settingsForm.authorName || '站长'}
+                className="h-16 w-16 rounded-2xl font-bold text-2xl shadow-md"
+              />
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                    博客头像
+                  </label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = '';
+                        if (file) void handleAvatarUpload(file);
+                      }}
+                    />
+                    <button
+                      type="button"
+                      disabled={avatarUploading}
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 disabled:opacity-60"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{avatarUploading ? '上传中…' : '上传头像'}</span>
+                    </button>
+                    {settingsForm.authorAvatar.trim() && (
+                      <button
+                        type="button"
+                        onClick={() => setSettingsForm({ ...settingsForm, authorAvatar: '' })}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-zinc-600 hover:bg-zinc-200/70 dark:text-zinc-300 dark:hover:bg-zinc-700/70"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>恢复默认</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  value={settingsForm.authorAvatar}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, authorAvatar: e.target.value })}
+                  onPaste={(e) => {
+                    const imgItem = Array.from(e.clipboardData.items).find((item) =>
+                      item.type.startsWith('image/'),
+                    );
+                    const file = imgItem?.getAsFile();
+                    if (file) {
+                      e.preventDefault();
+                      void handleAvatarUpload(file);
+                    }
+                  }}
+                  placeholder="上传图片，或粘贴 /uploads/... 与 https://... 图片地址（留空则显示昵称首字母）"
+                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-900/60"
+                />
+                <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                  支持点击上传、拖拽图片到此处、截图 Ctrl+V 粘贴，或填写外链图片 URL；修改后请点击「保存全部设置」。
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">

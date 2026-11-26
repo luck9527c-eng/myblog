@@ -42,6 +42,7 @@ const INITIAL_SETTINGS: SiteSettings = {
   blogSubtitle: '',
   authorName: '',
   authorHandle: '',
+  authorAvatar: '',
   authorBio: '',
   authorLocation: '',
   authorEmail: '',

@@ -112,6 +112,7 @@ export interface SiteSettings {
   blogSubtitle: string;
   authorName: string;
   authorHandle: string;
+  authorAvatar: string;
   authorBio: string;
   authorLocation: string;
   authorEmail: string;

@@ -120,6 +120,7 @@ async def reset_state() -> None:
                 blog_subtitle="记录与思考",
                 author_name="测试作者",
                 author_handle="@tester",
+                author_avatar="",
                 author_bio="这是测试简介",
                 author_location="上海",
                 author_email="tester@example.com",

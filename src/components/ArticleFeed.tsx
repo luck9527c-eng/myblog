@@ -20,6 +20,7 @@ import {
   getYearMonthLabel,
 } from '../utils/date';
 import { estimateReadingStats, renderMarkdown } from '../utils/markdown';
+import { AuthorAvatar } from './AuthorAvatar';
 import { MarkdownBody } from './MarkdownBody';
 
 interface ArticleFeedProps {
@@ -148,9 +149,11 @@ export const ArticleFeed: React.FC<ArticleFeedProps> = ({
         <header className="pb-6 border-b border-zinc-200/70 dark:border-white/10">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="h-16 w-16 shrink-0 rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-500 to-cyan-500 text-white flex items-center justify-center font-bold text-2xl shadow-md">
-                {settings.authorName.slice(0, 1)}
-              </div>
+              <AuthorAvatar
+                avatarUrl={settings.authorAvatar}
+                authorName={settings.authorName}
+                className="h-16 w-16 rounded-2xl font-bold text-2xl shadow-md"
+              />
               <div>
                 <div className="flex items-center gap-2.5">
                   <h1 className="text-2xl sm:text-[26px] font-bold tracking-tight text-zinc-900 dark:text-zinc-50">

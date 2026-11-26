@@ -58,6 +58,7 @@ async def test_acceptance_3_bootstrap_has_no_password_field(client: AsyncClient)
         "blogSubtitle",
         "authorName",
         "authorHandle",
+        "authorAvatar",
         "authorBio",
         "authorLocation",
         "authorEmail",
@@ -128,3 +129,24 @@ async def test_acceptance_7_about_content_update_visible(client: AsyncClient, ad
     bootstrap = await client.get("/api/public/bootstrap")
     assert bootstrap.status_code == 200
     assert bootstrap.json()["settings"]["aboutContent"] == new_about
+
+
+async def test_acceptance_8_author_avatar_update_and_validation(
+    client: AsyncClient, admin_client: AsyncClient
+) -> None:
+    """⑧ 博客头像更新、恢复默认与非法协议校验。"""
+    avatar_url = "/uploads/2026/11/avatar-demo.png"
+    res = await admin_client.put("/api/admin/settings", json={"authorAvatar": avatar_url})
+    assert res.status_code == 200
+    assert res.json()["authorAvatar"] == avatar_url
+
+    bootstrap = await client.get("/api/public/bootstrap")
+    assert bootstrap.status_code == 200
+    assert bootstrap.json()["settings"]["authorAvatar"] == avatar_url
+
+    bad = await admin_client.put("/api/admin/settings", json={"authorAvatar": "javascript:alert(1)"})
+    assert bad.status_code == 422
+
+    cleared = await admin_client.put("/api/admin/settings", json={"authorAvatar": ""})
+    assert cleared.status_code == 200
+    assert cleared.json()["authorAvatar"] == ""

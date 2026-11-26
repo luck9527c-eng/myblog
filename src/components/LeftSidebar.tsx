@@ -16,6 +16,7 @@ import {
   User,
 } from 'lucide-react';
 import type { AppView, SiteSettings, ThemeMode } from '../types';
+import { AuthorAvatar } from './AuthorAvatar';
 
 interface LeftSidebarProps {
   settings: SiteSettings;
@@ -66,9 +67,11 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         {/* Blogger Profile Card */}
         <div className="glass-card rounded-2xl p-4.5" data-rain-ledge>
           <div className="flex items-center gap-3.5">
-            <div className="h-12 w-12 shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-500 to-cyan-500 text-white flex items-center justify-center font-semibold text-lg tracking-tight shadow-sm">
-              {settings.authorName.slice(0, 1)}
-            </div>
+            <AuthorAvatar
+              avatarUrl={settings.authorAvatar}
+              authorName={settings.authorName}
+              className="h-12 w-12 rounded-xl font-semibold text-lg"
+            />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 truncate">

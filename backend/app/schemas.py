@@ -247,6 +247,7 @@ class SiteSettingsUpdateInput(CamelModel):
     blog_subtitle: str | None = Field(default=None, max_length=255)
     author_name: str | None = Field(default=None, max_length=64)
     author_handle: str | None = Field(default=None, max_length=64)
+    author_avatar: str | None = Field(default=None, max_length=255)
     author_bio: str | None = Field(default=None, max_length=500)
     author_location: str | None = Field(default=None, max_length=100)
     author_email: str | None = Field(default=None, max_length=120)
@@ -266,6 +267,24 @@ class SiteSettingsUpdateInput(CamelModel):
     @classmethod
     def _validate_optional_text(cls, value: str | None) -> str | None:
         return None if value is None else value.strip()
+
+    @field_validator("author_avatar")
+    @classmethod
+    def _validate_author_avatar(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        text = value.strip()
+        if not text:
+            return ""
+        if any(ch.isspace() for ch in text):
+            raise ValueError("头像地址不能包含空白字符")
+        if not (
+            text.startswith("/uploads/")
+            or text.startswith("https://")
+            or text.startswith("http://")
+        ):
+            raise ValueError("头像地址仅支持 /uploads/ 路径或 http(s):// 图片链接")
+        return text
 
 
 # ===========================================================================
@@ -289,6 +308,7 @@ class SiteSettingsOut(CamelModel):
     blog_subtitle: str
     author_name: str
     author_handle: str
+    author_avatar: str
     author_bio: str
     author_location: str
     author_email: str
@@ -423,6 +443,7 @@ def settings_to_out(row: "SiteSetting") -> SiteSettingsOut:
         blog_subtitle=row.blog_subtitle,
         author_name=row.author_name,
         author_handle=row.author_handle,
+        author_avatar=row.author_avatar or "",
         author_bio=row.author_bio,
         author_location=row.author_location,
         author_email=row.author_email,

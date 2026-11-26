@@ -60,6 +60,7 @@ class SiteSetting(Base):
     blog_subtitle: Mapped[str] = mapped_column(String(255), nullable=False, server_default=text("''"))
     author_name: Mapped[str] = mapped_column(String(64), nullable=False)
     author_handle: Mapped[str] = mapped_column(String(64), nullable=False, server_default=text("''"))
+    author_avatar: Mapped[str] = mapped_column(String(255), nullable=False, server_default=text("''"))
     author_bio: Mapped[str] = mapped_column(String(500), nullable=False, server_default=text("''"))
     author_location: Mapped[str] = mapped_column(String(100), nullable=False, server_default=text("''"))
     author_email: Mapped[str] = mapped_column(String(120), nullable=False, server_default=text("''"))
